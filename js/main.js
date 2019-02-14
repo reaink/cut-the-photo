@@ -30,7 +30,10 @@ layui.use(['element', 'layer'], function () {
           contentbox.css({
             width: '100%',
             height: img.height + 'px',
-            background: 'url(' + reader.result + ') no-repeat top center / 100% auto',
+            'background-image': 'url(' + reader.result + ')',
+            'background-repeat': 'no-repeat',
+            'background-size': '100% auto',
+            'background-position': 'top center'
           })
         })
       };
