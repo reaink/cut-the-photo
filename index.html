@@ -12,7 +12,7 @@
   <div class="layui-header">
     <div class="layui-main">
       <div class="logo">Cut The Photo</div>
-      <div class="version">v. alpha 0.2</div>
+      <div class="version">v.beta1.0</div>
     </div>
   </div>
   <div class="layui-fluid">
@@ -24,16 +24,31 @@
             <i class="layui-icon">&#xe67c;</i>上传图片
           </label>
         </div>
-        <div class="layui-col-xs1 layui-col-xs-offset10">
-          <button id="split-btn" class="layui-btn">输出切割</button>
+        <div class="layui-col-xs1 layui-col-xs-offset9">
+          <button id="clear-other" class="layui-btn">清除元素</button>
+        </div>
+        <div class="layui-col-xs1">
+          <button id="split-create" class="layui-btn layui-full-btn">输出切割</button>
         </div>
       </div>
     </div>
-    <div class="main-content">
-      
+    <h3><span>Main Content</span></h3>
+    <div class="main-content"></div>
+  </div>
+  <div class="layui-container">
+    <div class="layui-row tools-box">
+      <div class="layui-col-xs1">
+        <button id="clear-exports" class="layui-btn">清空输出</button>
+      </div>
+      <div class="layui-col-xs1 layui-col-xs-offset10">
+        <button id="down-image" class="layui-btn layui-full-btn">转换图片</button>
+      </div>
     </div>
   </div>
-  <div id="returnNode"></div>
+  <div class="layui-fluid">
+    <h3><span>Screen</span></h3>
+    <div id="exports-box"></div>
+  </div>
   <script src="layui/layui.js"></script>
   <script src="js/html2canvas.min.js"></script>
   <script src="js/main.js"></script>

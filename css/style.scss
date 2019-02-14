@@ -33,12 +33,27 @@
 .main-content {
   position: relative;
   margin: 0 auto;
+  width: 200px;
+  min-height: 200px;
+  box-shadow: 0 0 3px #ccc;
 }
 
-#split-btn {
+.layui-full-btn {
   width: 100%;
 }
 
-#returnNode {
-  min-width: 90%;
+h3 {
+  margin-bottom: 5px;
+  span {
+    border-bottom: 1px solid #ccc;
+  }
+}
+
+#exports-box {
+  margin: 20px auto;
+  min-width: 200px;
+  max-width: 90%;
+  width: 200px;
+  min-height: 200px;
+  box-shadow: 0 0 3px #ccc;
 }

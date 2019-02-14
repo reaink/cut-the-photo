@@ -8,6 +8,7 @@ layui.use(['element', 'layer'], function () {
 
 
   var contentBox = $('.main-content'),
+    exportsBox = $('#exports-box'),
     _line = _createLineDom('#00dffc', true),
     _oldLine,
     idNum = 0;
@@ -29,12 +30,14 @@ layui.use(['element', 'layer'], function () {
 
     contentBox.on('click', addLine)
 
-    $('#split-btn').on('click', exportImg)
+    $('#clear-other').on('click', clearOther)
+    $('#split-create').on('click', exportsCanvas)
+    $('#to-image').on('click', toImage)
+    $('#down-image').on('click', downImage)
+    $('#clear-exports').on('click', clearExports)
   }
 
   initElement();
-
- 
 
   function _createLineDom(bgcolor, isglobal) {
     var line = document.createElement('div'),
@@ -104,7 +107,7 @@ layui.use(['element', 'layer'], function () {
       display: 'inline-block',
       width: '100%',
       background: 'rgba(0,0,0,.8)'
-    }).attr('class', 'split-card mask')
+    }).addClass('split-card mask');
 
     return oDiv;
   }
@@ -128,6 +131,7 @@ layui.use(['element', 'layer'], function () {
           $(img).width = img.width + 'px';
           $(img).height = img.height + 'px';
 
+          exportsBox.css('width', img.width + 'px');
           contentbox.css({
             width: img.width + 'px',
             height: img.height + 'px',
@@ -164,16 +168,55 @@ layui.use(['element', 'layer'], function () {
     console.log('add line of top:', $(_line).css('top'));
 
     if (_oldLine && parseInt($(_line).css('top')) > parseInt($(_oldLine).css('top'))) {
-      var _oDiv = _creMask();
+      var _oDiv = _creMask(),
+        removeBtn = document.createElement('div')
+      
+      $(removeBtn).css({
+        display: 'none',
+        position: 'absolute',
+        'border-radius': '50%',
+        width: '30px',
+        height: '30px',
+        background: '#ccc',
+        color: 'red',
+        'text-align': 'center',
+        'line-height': '30px',
+        cursor: 'pointer'
+      }).text('X');
+
+      $(_oDiv).addClass('card-' + idNum++);
+
+      contentBox.append(removeBtn);
 
       $(_oDiv).css({
         position: 'absolute',
         top: parseInt($(_oldLine).css('top')) - 1 + 'px',
-        height: parseInt($(_line).css('top')) - parseInt($(_oldLine).css('top')) + 'px'
+        height: parseInt($(_line).css('top')) - parseInt($(_oldLine).css('top')) + 'px',
+        'background-image': contentBox.css('background-image'),
+        'background-position': 0 + ' ' + -parseInt($(_oldLine).css('top')) + 'px',
+        'background-repeat': 'no-repeat',
+        'background-size': 'cover',
+        filter: 'brightness(.8)'
+      }).on('mouseover', function (ev) {
+        $(removeBtn).css({
+          top: 
+          parseInt($(_oDiv).css('top')) +
+          parseInt($(_oDiv).css('height')) / 2 -
+          (parseInt($(removeBtn).css('height')) / 2) + 'px',
+          left: ev.clientX - parseInt(contentBox.offset().left) - (parseInt($(removeBtn).css('width')) / 2) + 'px',
+          display: 'inline-block',
+          zIndex: 999992
+        })
+      })
+      $(removeBtn).on('click', function (){
+        var tmpId = $(_oDiv).attr('class').split(' ')[2];
+        $('.' + tmpId).remove();
+        $(removeBtn).remove();
+        
+        return false;
       })
 
       contentBox.append(_oDiv);
-
     }
 
     $(line).css({
@@ -184,22 +227,95 @@ layui.use(['element', 'layer'], function () {
     _oldLine = line;
   }
 
-  function exportImg() {
+  function exportsCanvas() {
     var splitCards = contentBox.find('.split-card');
 
-    contentBox.find('.mask').css('background', '');
     contentBox.find('.line').remove();
     contentBox.find('.removeBtn').remove();
     
     setTimeout(function () {
       for (let el of splitCards) {
         html2canvas(el).then(function (canvas) {
-          $('#returnNode').append(canvas);
+          exportsBox.append(canvas);
         })
       }
-    }, 10)
-    
+    }, 100)
 
+    $('')
+    $('#down-image').text('转换图片');
     
+  }
+
+  function clearOther() {
+    contentBox.find('.line').remove();
+    contentBox.find('.removeBtn').remove();
+  }
+  function toImage() {
+    var canvas = $('#exports-box canvas');
+    testNullReturn();
+    canvas.each(function (i, c) {
+      $(c).replaceWith(canvasToImage(c));
+    })
+    
+  }
+  function canvasToImage(canvas) {
+    var img = document.createElement('img');
+    img.src =  canvas.toDataURL("image/jpg");
+    return img;
+  }
+  function downImage() {
+    contentBox.find('.line').remove();
+    contentBox.find('.removeBtn').remove();
+    testNullReturn();
+
+    var exportImgs = $('#exports-box img');
+
+    if (!exportImgs.get(0)) {
+      toImage();
+      $('#down-image').text('点击下载');
+    } else {
+      exportImgs.each(function (i, val) {
+        download('pro' + i, $(val).attr('src'));
+      })
+    }
+    
+  }
+
+  function testNullReturn() {
+    if (!exportsBox.html()) {
+      layer.msg('没有转换canvas元素！');
+    }
+  }
+
+  function clearExports() {
+    exportsBox.html('');
+  }
+
+  function download(name, data) {
+    downloadFile(name, data);
+  }
+  function downloadFile(fileName, content) {
+    let aLink = document.createElement('a');
+    let blob = base64ToBlob(content); //new Blob([content]);
+
+    let evt = document.createEvent("HTMLEvents");
+    evt.initEvent("click", true, true);//initEvent 不加后两个参数在FF下会报错  事件类型，是否冒泡，是否阻止浏览器的默认行为
+    aLink.download = fileName;
+    aLink.href = URL.createObjectURL(blob);
+
+    aLink.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true, view: window}));//兼容火狐
+  }
+  function base64ToBlob(code) {
+    let parts = code.split(';base64,');
+    let contentType = parts[0].split(':')[1];
+    let raw = window.atob(parts[1]);
+    let rawLength = raw.length;
+
+    let uInt8Array = new Uint8Array(rawLength);
+
+    for (let i = 0; i < rawLength; ++i) {
+      uInt8Array[i] = raw.charCodeAt(i);
+    }
+    return new Blob([uInt8Array], {type: contentType});
   }
 });
