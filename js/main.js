@@ -1,3 +1,7 @@
+/**
+* @author sr_<nmlixa@163.com>
+* @date  2019/02/14 15:30:25
+*/
 layui.use(['element', 'layer'], function () {
   var $ = layui.$,
     layer = layui.layer;
@@ -56,17 +60,20 @@ layui.use(['element', 'layer'], function () {
           $(img).width = img.width + 'px';
           $(img).height = img.height + 'px';
 
-          console.log(img.height);
           contentbox.css({
-            width: '100%',
+            width: img.width + 'px',
             height: img.height + 'px',
             'background-image': 'url(' + reader.result + ')',
             'background-repeat': 'no-repeat',
             'background-size': 'contain',
-            'background-position': 'top center'
+            'background-position': 'top center',
+            'box-shadow': '0 0 5px #999'
           })
+
+          console.log('IMG width:', img.width, ', height:', img.height);
         })
       };
+
 
       reader.readAsDataURL(file);
     }
@@ -85,13 +92,12 @@ layui.use(['element', 'layer'], function () {
 
     var line = _createLineDom('#00f');
 
-    console.log('add line of:', $(_line).css('top'));
+    console.log('add line of top:', $(_line).css('top'));
 
     $(line).css({
       top: $(_line).css('top')
     })
 
     contentBox.append(line);
-    
   }
 });
