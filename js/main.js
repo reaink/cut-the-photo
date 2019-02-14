@@ -4,28 +4,15 @@
 */
 layui.use(['element', 'layer'], function () {
   var $ = layui.$,
-    layer = layui.layer,
-    evClient;
+    layer = layui.layer;
 
 
   var contentBox = $('.main-content'),
     _line = _createLineDom('#00dffc', true),
     _oldLine,
-    removeBtn = document.createElement('div');
+    idNum = 0;
 
   function initElement() {
-
-    $(removeBtn).css({
-      display: 'none',
-      position: 'absolute',
-      'border-radius': '50%',
-      width: '30px',
-      height: '30px',
-      background: '#ccc',
-      color: 'red'
-    }).val('X')
-
-    contentBox.append(removeBtn);
 
     $('#upload-img').on('change', uploadImg);
 
@@ -40,10 +27,6 @@ layui.use(['element', 'layer'], function () {
 
     contentBox.on('mousemove', contMove)
 
-    $(window).on('scroll', function () {
-      contMove();
-    })
-
     contentBox.on('click', addLine)
 
     $('#split-btn').on('click', exportImg)
@@ -54,42 +37,61 @@ layui.use(['element', 'layer'], function () {
  
 
   function _createLineDom(bgcolor, isglobal) {
-    var line = document.createElement('div');
-    bgcolor = bgcolor || '#00dffc'
+    var line = document.createElement('div'),
+      removeBtn = document.createElement('div');
+      bgcolor = bgcolor || '#00dffc';
 
     $(line).css({
       position: 'absolute',
       width: '100%',
       height: '1px',
-      background: bgcolor
+      background: bgcolor,
+      zIndex: 999991
     })
 
-    $(line).attr('class', 'line');
+    $(removeBtn).css({
+      display: 'none',
+      position: 'absolute',
+      'border-radius': '50%',
+      width: '30px',
+      height: '30px',
+      background: '#ccc',
+      color: 'red',
+      'text-align': 'center',
+      'line-height': '30px',
+      cursor: 'pointer'
+    }).text('X');
+
+    $(removeBtn).attr('class', 'removeBtn');
+
+    contentBox.append(removeBtn);
+
+    $(line).attr('class', 'line line-' + idNum++);
 
     if (!isglobal) {
       $(line).on('mouseover', function (ev) {
         ev = ev || event;
-
+        var tmpId = $(this).attr('class').split(' ')[1];
+        
         $(removeBtn).css({
           top: parseInt($(this).css('top')) - (parseInt($(removeBtn).css('width')) / 2) + 'px',
           left: ev.clientX - parseInt(contentBox.offset().left) - (parseInt($(removeBtn).css('width')) / 2) + 'px',
           display: 'inline-block',
-          zIndex: 999991
+          zIndex: 999992
         })
 
-        $(removeBtn).on('mouseenter', function () {
-          $(removeBtn).show();
+        $(removeBtn).on('mouseover', function () {
+          $(this).show();
         }).on('mouseout', function () {
           setTimeout(function () {
             $(removeBtn).hide();
-          }, 1000);
+          }, 2000);
         }).on('click', function () {
-          $(line).remove();
+          $('.' + tmpId).remove();
+          $(removeBtn).remove();
           return false;
         })
 
-      }).on('mouseout', function () {
-        $(removeBtn).hide();
       })
     }
 
@@ -101,9 +103,8 @@ layui.use(['element', 'layer'], function () {
     $(oDiv).css({
       display: 'inline-block',
       width: '100%',
-      background: 'rgba(0,0,0,.8)',
-      border: '1px solid rgba(255,255,255,.8)'
-    })
+      background: 'rgba(0,0,0,.8)'
+    }).attr('class', 'split-card mask')
 
     return oDiv;
   }
@@ -169,7 +170,7 @@ layui.use(['element', 'layer'], function () {
         position: 'absolute',
         top: parseInt($(_oldLine).css('top')) - 1 + 'px',
         height: parseInt($(_line).css('top')) - parseInt($(_oldLine).css('top')) + 'px'
-      });
+      })
 
       contentBox.append(_oDiv);
 
@@ -184,6 +185,21 @@ layui.use(['element', 'layer'], function () {
   }
 
   function exportImg() {
+    var splitCards = contentBox.find('.split-card');
 
+    contentBox.find('.mask').css('background', '');
+    contentBox.find('.line').remove();
+    contentBox.find('.removeBtn').remove();
+    
+    setTimeout(function () {
+      for (let el of splitCards) {
+        html2canvas(el).then(function (canvas) {
+          $('#returnNode').append(canvas);
+        })
+      }
+    }, 10)
+    
+
+    
   }
 });
