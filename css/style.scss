@@ -32,7 +32,7 @@
 
 .main-content {
   position: relative;
-  margin: 0 auto;
+  margin: 0 auto 30px;
   width: 200px;
   min-height: 200px;
   box-shadow: 0 0 3px #ccc;
@@ -43,14 +43,14 @@
 }
 
 h3 {
-  margin-bottom: 5px;
+  margin: 10px 0;
   span {
     border-bottom: 1px solid #ccc;
   }
 }
 
 #exports-box {
-  margin: 20px auto;
+  margin: 10px auto 20px;
   min-width: 200px;
   max-width: 90%;
   width: 200px;
