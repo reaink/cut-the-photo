@@ -32,8 +32,8 @@ layui.use(['element', 'layer'], function () {
             height: img.height + 'px',
             'background-image': 'url(' + reader.result + ')',
             'background-repeat': 'no-repeat',
-            'background-size': '100% auto',
-            'background-position': 'contain'
+            'background-size': 'contain',
+            'background-position': 'top center'
           })
         })
       };
