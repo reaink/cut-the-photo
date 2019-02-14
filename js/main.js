@@ -33,7 +33,7 @@ layui.use(['element', 'layer'], function () {
             'background-image': 'url(' + reader.result + ')',
             'background-repeat': 'no-repeat',
             'background-size': '100% auto',
-            'background-position': 'top center'
+            'background-position': 'contain'
           })
         })
       };
