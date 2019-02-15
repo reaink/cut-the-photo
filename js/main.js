@@ -127,20 +127,12 @@ layui.use(['element', 'layer'], function () {
     var addLineBtn = document.createElement('div');
 
     $(addLineBtn).css({
-      display: 'inline-block',
       position: 'absolute',
-      'border-radius': '50%',
-      width: '30px',
-      height: '30px',
-      background: '#ccc',
       right: '-50px',
-      padding: '5px',
-      'border-radius': '50%',
-      color: 'red',
-      'text-align': 'center',
-      'line-height': '30px',
-      cursor: 'pointer'
-    }).text('←');
+      cursor: 'pointer',
+      padding: 0,
+      width: '38px',
+    }).addClass('layui-btn layui-btn-radius layui-btn-primary').text('←');
 
     _Tip(addLineBtn, '添加分隔线');
 
@@ -150,13 +142,13 @@ layui.use(['element', 'layer'], function () {
     var startBtn = _creAddLineBtn(),
       endBtn = _creAddLineBtn();
     
-    $(startBtn).css('top', '-20px').on('mousemove', function() {
+    $(startBtn).css('top', '-21px').on('mousemove', function() {
       contMove(ev, '0');
       contentBox.off('mousemove');
     }).on('mouseleave', function() {
       contentBox.on('mousemove', contMove);
     });
-    $(endBtn).css('bottom', '-18px').on('mousemove', function() {
+    $(endBtn).css('bottom', '-15px').on('mousemove', function() {
       contMove(ev, parseInt(contentBox.height()));
       contentBox.off('mousemove');
     }).on('mouseleave', function() {
