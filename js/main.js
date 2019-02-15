@@ -4,13 +4,15 @@
 */
 layui.use(['element', 'layer'], function () {
   var $ = layui.$,
-    layer = layui.layer;
+    layer = layui.layer
+    version = 'dev 1.3.0';
 
 
   var contentBox = $('.main-content'),
     exportsBox = $('#exports-box'),
     _line = _createLineDom('#00dffc', true),
     _oldLine,
+    _scale = 1,
     idNum = 0;
 
   function initElement() {
@@ -44,7 +46,10 @@ layui.use(['element', 'layer'], function () {
     $('#clear-exports').on('click', clearExports)
 
     initStartEndBtn();
+    initScaleControls();
 
+
+    $('.version').text(version);
   }
 
   function _Tip(el, msg) {
@@ -108,6 +113,7 @@ layui.use(['element', 'layer'], function () {
 
         $(removeBtn).on('mouseover', function () {
           $(this).show();
+          $('.card-remove-btn').hide();
         }).on('mouseout', function () {
           setTimeout(function () {
             $(removeBtn).hide();
@@ -158,6 +164,42 @@ layui.use(['element', 'layer'], function () {
     contentBox.append(startBtn);
     contentBox.append(endBtn);
     
+  }
+
+  function initScaleControls(){
+    var subBtn = $('#scale-sub'),
+      plusBtn =$('#scale-plus'),
+      initBtn = $('#scale-init'),
+      _scale = 1
+      marginInit = contentBox.css('margin-bottom');
+
+    initStyle = {
+      width: contentBox.css('width'),
+      height: contentBox.css('height'),
+      margin: contentBox.css('margin')
+    }
+    
+    subBtn.on('click', function (){
+      contentBox.css({
+        transform: 'scale(' + (_scale -= 0.25) + ')',
+        margin: parseInt(parseInt(marginInit) * _scale) + 'px auto'
+      });
+    })
+    plusBtn.on('click', function (){
+      contentBox.css({
+        transform: 'scale(' + (_scale += 0.25) + ')',
+        margin: parseInt(parseInt(marginInit) * _scale) + 'px auto',
+      });
+      console.log('height: ',marginInit, 'scale: ', _scale, parseInt(parseInt(marginInit) * _scale) + 'px auto');
+      
+    })
+    initBtn.on('click', function (){
+      contentBox.css({
+        transform: 'scale(1)',
+        margin: initStyle.margin
+      });
+      _scale = 1;
+    })
   }
   function _creMask() {
     var oDiv = document.createElement('div');
@@ -220,7 +262,7 @@ layui.use(['element', 'layer'], function () {
       })
     } else {
       $(_line).css({
-        top: ev.clientY - contentBox.offset().top + $(window).scrollTop() + 'px'
+        top: (ev.clientY - contentBox.offset().top + $(window).scrollTop()) * _scale + 'px'
       })
     }
   }
@@ -237,7 +279,7 @@ layui.use(['element', 'layer'], function () {
         removeBtn = document.createElement('div'),
         isOut;
 
-        $(removeBtn).attr('class', 'card-remove-btn')
+      $(removeBtn).attr('class', 'card-remove-btn');
       
       $(removeBtn).css({
         display: 'none',
@@ -252,7 +294,7 @@ layui.use(['element', 'layer'], function () {
         cursor: 'pointer'
       }).text('X');
 
-      $(_oDiv).addClass('card-' + idNum++);
+      $(_oDiv).addClass('card-mask card-' + idNum++);
 
       contentBox.append(removeBtn);
 
@@ -267,7 +309,7 @@ layui.use(['element', 'layer'], function () {
         filter: 'brightness(.8)'
       }).on('mouseenter', function (ev) {
         $(removeBtn).css({
-          top: ev.clientY - parseInt(contentBox.offset().top) - (parseInt($(removeBtn).css('height')) / 2) + 'px',
+          top: ev.clientY - parseInt(contentBox.offset().top) - (parseInt($(removeBtn).css('height')) / 2) + parseInt($(window).scrollTop()) + 'px',
           left: ev.clientX - parseInt(contentBox.offset().left) - (parseInt($(removeBtn).css('width')) / 2) + 'px',
           display: 'inline-block',
           background: '#999',
@@ -285,7 +327,7 @@ layui.use(['element', 'layer'], function () {
         }, 1000)
       });
       $(removeBtn).on('click', function (){
-        var tmpId = $(_oDiv).attr('class').split(' ')[2];
+        var tmpId = $(_oDiv).attr('class').split(' ')[3];
         $('.' + tmpId).remove();
         $(removeBtn).remove();
         

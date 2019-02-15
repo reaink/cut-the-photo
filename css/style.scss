@@ -21,6 +21,19 @@
   }
 }
 
+.mg0 {
+  margin: 0 !important;
+}
+
+.text-center {
+  text-align: center !important;
+  margin: 0 auto !important;
+}
+
+.w100 {
+  width: 100%;
+}
+
 .float-right {
   float: right;
 }
@@ -47,6 +60,10 @@ h3 {
   span {
     border-bottom: 1px solid #ccc;
   }
+}
+
+.scale-box button {
+  width: 50%;
 }
 
 #exports-box {
