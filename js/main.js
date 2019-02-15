@@ -30,11 +30,32 @@ layui.use(['element', 'layer'], function () {
 
     contentBox.on('click', addLine)
 
-    $('#clear-other').on('click', clearOther)
+    $('#clear-other').on('click', clearOther);
+    _Tip('#clear-other', '清除内容面板中：分割线与删除按钮');
+
+    $('#clear-all').on('click', clearAll);
+    _Tip('#clear-all', '清除内容面板中：分割线、删除按钮、遮罩面板');
+
     $('#split-create').on('click', exportsCanvas)
+    _Tip('#split-create', '输出选中遮罩面板到输出区');
+
     $('#to-image').on('click', toImage)
     $('#down-image').on('click', downImage)
     $('#clear-exports').on('click', clearExports)
+
+  }
+
+  function _Tip(el, msg) {
+    var Tip;
+    $(el).on('mouseenter', function () {
+      Tip = setTimeout(function () {
+        layer.tips(msg, el, {
+          tips: 3
+        });
+      }, 2000);
+    }).on('mouseleave', function () {
+      clearTimeout(Tip);
+    })
   }
 
   initElement();
@@ -170,6 +191,7 @@ layui.use(['element', 'layer'], function () {
     if (_oldLine && parseInt($(_line).css('top')) > parseInt($(_oldLine).css('top'))) {
       var _oDiv = _creMask(),
         removeBtn = document.createElement('div')
+        $(removeBtn).attr('class', 'card-remove-btn')
       
       $(removeBtn).css({
         display: 'none',
@@ -230,8 +252,8 @@ layui.use(['element', 'layer'], function () {
   function exportsCanvas() {
     var splitCards = contentBox.find('.split-card');
 
-    contentBox.find('.line').remove();
-    contentBox.find('.removeBtn').remove();
+    clearOther();
+    contentBox.find('.card-remove-btn').hide();
     
     setTimeout(function () {
       for (let el of splitCards) {
@@ -249,7 +271,26 @@ layui.use(['element', 'layer'], function () {
   function clearOther() {
     contentBox.find('.line').remove();
     contentBox.find('.removeBtn').remove();
+
+    topMsg();
   }
+
+  function topMsg(msg) {
+    msg = msg || '已清除';
+    layer.msg(msg, {
+      offset: 't',
+      anim: 6
+    });
+  }
+
+  function clearAll() {
+    clearOther();
+    contentBox.find('.mask').remove();
+    contentBox.find('.card-remove-btn').remove();
+
+    topMsg();
+  }
+
   function toImage() {
     var canvas = $('#exports-box canvas');
     testNullReturn();
