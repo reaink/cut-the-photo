@@ -214,8 +214,6 @@ layui.use(['element', 'layer'], function () {
   function contMove(ev, clientY) {
     ev = ev || event;
     
-    console.log(clientY);
-    
     if (clientY) {
       $(_line).css({
         top: clientY + 'px'
@@ -236,7 +234,9 @@ layui.use(['element', 'layer'], function () {
 
     if (_oldLine && parseInt($(_line).css('top')) > parseInt($(_oldLine).css('top'))) {
       var _oDiv = _creMask(),
-        removeBtn = document.createElement('div')
+        removeBtn = document.createElement('div'),
+        isOut;
+
         $(removeBtn).attr('class', 'card-remove-btn')
       
       $(removeBtn).css({
@@ -265,17 +265,25 @@ layui.use(['element', 'layer'], function () {
         'background-repeat': 'no-repeat',
         'background-size': 'cover',
         filter: 'brightness(.8)'
-      }).on('mouseover', function (ev) {
+      }).on('mouseenter', function (ev) {
         $(removeBtn).css({
-          top: 
-          parseInt($(_oDiv).css('top')) +
-          parseInt($(_oDiv).css('height')) / 2 -
-          (parseInt($(removeBtn).css('height')) / 2) + 'px',
+          top: ev.clientY - parseInt(contentBox.offset().top) - (parseInt($(removeBtn).css('height')) / 2) + 'px',
           left: ev.clientX - parseInt(contentBox.offset().left) - (parseInt($(removeBtn).css('width')) / 2) + 'px',
           display: 'inline-block',
+          background: '#999',
           zIndex: 999992
+        }).on('mouseenter', function () {
+          clearTimeout(isOut);
+        }).on('mouseleave', function () {
+          isOut = setTimeout(function () {
+            $(removeBtn).hide();
+          }, 5000)
         })
-      })
+      }).on('mouseleave', function () {
+        isOut = setTimeout(function () {
+          $(removeBtn).hide();
+        }, 1000)
+      });
       $(removeBtn).on('click', function (){
         var tmpId = $(_oDiv).attr('class').split(' ')[2];
         $('.' + tmpId).remove();
