@@ -43,6 +43,8 @@ layui.use(['element', 'layer'], function () {
     $('#down-image').on('click', downImage)
     $('#clear-exports').on('click', clearExports)
 
+    initStartEndBtn();
+
   }
 
   function _Tip(el, msg) {
@@ -121,6 +123,50 @@ layui.use(['element', 'layer'], function () {
 
     return line;
   }
+  function _creAddLineBtn() {
+    var addLineBtn = document.createElement('div');
+
+    $(addLineBtn).css({
+      display: 'inline-block',
+      position: 'absolute',
+      'border-radius': '50%',
+      width: '30px',
+      height: '30px',
+      background: '#ccc',
+      right: '-50px',
+      padding: '5px',
+      'border-radius': '50%',
+      color: 'red',
+      'text-align': 'center',
+      'line-height': '30px',
+      cursor: 'pointer'
+    }).text('←');
+
+    _Tip(addLineBtn, '添加分隔线');
+
+    return addLineBtn;
+  }
+  function initStartEndBtn(ev) {
+    var startBtn = _creAddLineBtn(),
+      endBtn = _creAddLineBtn();
+    
+    $(startBtn).css('top', '-20px').on('mousemove', function() {
+      contMove(ev, '0');
+      contentBox.off('mousemove');
+    }).on('mouseleave', function() {
+      contentBox.on('mousemove', contMove);
+    });
+    $(endBtn).css('bottom', '-18px').on('mousemove', function() {
+      contMove(ev, parseInt(contentBox.height()));
+      contentBox.off('mousemove');
+    }).on('mouseleave', function() {
+      contentBox.on('mousemove', contMove);
+    });
+
+    contentBox.append(startBtn);
+    contentBox.append(endBtn);
+    
+  }
   function _creMask() {
     var oDiv = document.createElement('div');
 
@@ -173,12 +219,20 @@ layui.use(['element', 'layer'], function () {
     
   }
 
-  function contMove(ev) {
+  function contMove(ev, clientY) {
     ev = ev || event;
     
-    $(_line).css({
-      top: ev.clientY - contentBox.offset().top + $(window).scrollTop() + 'px'
-    })
+    console.log(clientY);
+    
+    if (clientY) {
+      $(_line).css({
+        top: clientY + 'px'
+      })
+    } else {
+      $(_line).css({
+        top: ev.clientY - contentBox.offset().top + $(window).scrollTop() + 'px'
+      })
+    }
   }
 
   function addLine(ev) {
