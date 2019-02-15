@@ -123,7 +123,7 @@ layui.use(['element', 'layer'], function () {
 
     return line;
   }
-  function _creAddLineBtn() {
+  function _creAddLineBtn(tipMsg) {
     var addLineBtn = document.createElement('div');
 
     $(addLineBtn).css({
@@ -134,13 +134,13 @@ layui.use(['element', 'layer'], function () {
       width: '38px',
     }).addClass('layui-btn layui-btn-radius layui-btn-primary').text('←');
 
-    _Tip(addLineBtn, '添加分隔线');
+    _Tip(addLineBtn, tipMsg);
 
     return addLineBtn;
   }
   function initStartEndBtn(ev) {
-    var startBtn = _creAddLineBtn(),
-      endBtn = _creAddLineBtn();
+    var startBtn = _creAddLineBtn('添加顶部分隔线'),
+      endBtn = _creAddLineBtn('添加底部分隔线');
     
     $(startBtn).css('top', '-21px').on('mousemove', function() {
       contMove(ev, '0');
