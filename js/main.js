@@ -310,14 +310,18 @@ layui.use(['element', 'layer'], function () {
     contentBox.find('.card-remove-btn').hide();
     
     setTimeout(function () {
+      let i = 0;
       for (let el of splitCards) {
         html2canvas(el).then(function (canvas) {
           exportsBox.append(canvas);
+          i++;
+          if (i === splitCards.length) {
+            layer.msg('输出完成');
+          }
         })
       }
     }, 100)
 
-    $('')
     $('#down-image').text('转换图片');
     
   }
