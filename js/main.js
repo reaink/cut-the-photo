@@ -14,11 +14,10 @@ layui.use(['element', 'layer'], function () {
     contmenu = document.createElement('div'),
     _oldLine,
     _scale = 1,
-    idNum = 0,
-    cardNum = 0;
+    idNum = 1,
+    cardNum = 1;
 
   function initElement() {
-
     $('#upload-img').on('change', uploadImg);
 
     contentBox.on('mouseenter', function () {
@@ -344,7 +343,7 @@ layui.use(['element', 'layer'], function () {
         isOut;
 
       $(removeBtn).addClass('remove-btn card-remove-btn');
-      $(_oDiv).addClass('card-mask card-' + (idNum++) + ' ' + cardNum++);
+      $(_oDiv).addClass('card-mask card-' + (idNum++) + ' card-num' + cardNum++);
 
       console.log('add line of top:', $(_line).css('top'), 'cardNum: ', cardNum);
 
@@ -436,9 +435,11 @@ layui.use(['element', 'layer'], function () {
   }
 
   function exportsCanvas() {
-    var splitCards = contentBox.find('.split-card'),
-      loading = layer.load(1, {shade: 0.5});;
+    var splitCards = contentBox.find('.split-card');
 
+    if(!isHaveContCard()) return;
+
+    var loading = layer.load(1, {shade: 0.5});
     setOther('hide');
     setExportBoxWidth();
     setFullScreenCenter(1, exportsBox);
@@ -446,9 +447,12 @@ layui.use(['element', 'layer'], function () {
     
     setTimeout(function () {
       let i = 0,
-        allLength = splitCards.length+1;
+        allLength = splitCards.length+1,
+        aClass;
       for (let el of splitCards) {
         html2canvas(el).then(function (canvas) {
+          aClass = $(el).attr('class').split(' ');
+          $(canvas).attr('class', aClass[4]);
           exportsBox.append(canvas);
           i++;
           layer.msg(`共：${allLength}个，第${i}个`, {
@@ -504,12 +508,30 @@ layui.use(['element', 'layer'], function () {
   }
 
   function toImage() {
-    var canvas = $('#exports-box canvas');
+    // sortCanvas();
     isHaveCanvas();
-    canvas.each(function (i, c) {
+
+    $('#exports-box canvas').each(function (i, c) {
       $(c).replaceWith(canvasToImage(c));
     })
     
+  }
+  function sortCanvas() {
+    var nNum, oNum, cloneNode;
+    $('#exports-box canvas').each(function (i, c) {
+      nNum = $(c).attr('class').substr($(c).attr('class').length - 1);
+      if (nNum < oNum) {
+        cloneNode = $(c).clone(true);
+        exportsBox.append(cloneNode);
+        $(c).remove();
+      }
+      console.log(nNum, oNum, nNum < oNum);
+      
+      oNum = nNum;
+    })
+    $('#exports-box canvas').each(function (i, c) {
+      console.log($(c).attr('class'));
+    })
   }
   function canvasToImage(canvas) {
     var img = document.createElement('img');
@@ -537,6 +559,14 @@ layui.use(['element', 'layer'], function () {
     if (!exportsBox.html()) {
       layer.msg('没有转换canvas元素！');
       return 'notCanvas';
+    }
+  }
+  function isHaveContCard() {
+    if (!contentBox.find('.card-mask').get(0)) {
+      layer.msg('没有card-mask层！');
+      return false;
+    } else {
+      return true;
     }
   }
   function clearExports() {
