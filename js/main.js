@@ -5,7 +5,7 @@
 layui.use(['element', 'layer'], function () {
   var $ = layui.$,
     layer = layui.layer
-    version = 'dev 1.3.1';
+    version = 'beta 1.4.0';
 
 
   var contentBox = $('.main-content'),
@@ -33,7 +33,7 @@ layui.use(['element', 'layer'], function () {
 
     contentBox.on('click', addLine)
 
-    $('#clear-other').on('click', clearOther);
+    $('#clear-other').on('click', setOther);
     _Tip('#clear-other', '清除内容面板中：分割线与删除按钮');
 
     $('#clear-all').on('click', clearAll);
@@ -52,21 +52,26 @@ layui.use(['element', 'layer'], function () {
     initStartEndBtn();
     initScaleControls();
     initContMenu();
-
-
+    initToolsBtn();
     $('.version').text(version);
+
+    setExportBoxWidth();
+
   }
 
   initElement();
 
-  function _Tip(el, msg) {
+  function _Tip(el, msg, tips) {
     var Tip;
+
+    tips = tips || 3;
+
     $(el).on('mouseenter', function () {
       Tip = setTimeout(function () {
         layer.tips(msg, el, {
-          tips: 3
+          tips: tips
         });
-      }, 2000);
+      }, 1000);
     }).on('mouseleave', function () {
       clearTimeout(Tip);
     })
@@ -74,8 +79,10 @@ layui.use(['element', 'layer'], function () {
 
   function _createLineDom(bgcolor, isglobal) {
     var line = document.createElement('div'),
-      removeBtn = document.createElement('div');
-      bgcolor = bgcolor || '#00dffc';
+      removeBtn = document.createElement('i'),
+      timer;
+
+    bgcolor = bgcolor || '#00dffc',
 
     $(line).css({
       position: 'absolute',
@@ -83,98 +90,116 @@ layui.use(['element', 'layer'], function () {
       height: '1px',
       background: bgcolor,
       zIndex: 999991
-    })
+    }).addClass('line line-' + idNum++);
 
     $(removeBtn).css({
       display: 'none',
+      'font-size': 30 + 'px',
       position: 'absolute',
-      'border-radius': '50%',
-      width: '30px',
-      height: '30px',
-      background: '#ccc',
-      color: 'red',
-      'text-align': 'center',
-      'line-height': '30px',
+      color: '#06f',
       cursor: 'pointer'
-    }).text('X');
-
-    $(removeBtn).addClass('removeBtn');
-
-    contentBox.append(removeBtn);
-
-    $(line).addClass('line line-' + idNum++);
+    }).addClass('layui-icon layui-icon-close remove-btn').on('mouseover', function () {
+      clearTimeout(timer);
+      return false;
+    }).on('mouseout', function () {
+      timer = setTimeout(function () {
+        $(line).css({
+          background: bgcolor,
+          transform: 'scale(1)'
+        });
+        $(removeBtn).hide();
+      }, 1000);
+    }).on('mousemove', function () {
+      return false;
+    }).attr('title', `删除idNum：${idNum}分隔线`);
 
     if (!isglobal) {
+      contentBox.append(removeBtn);
+
       $(line).on('mouseover', function (ev) {
         ev = ev || event;
         var tmpId = $(this).attr('class').split(' ')[1];
+
+        $(this).css('transform', 'scaleY(5)');
         
         $(removeBtn).css({
           top: parseInt($(this).css('top')) - (parseInt($(removeBtn).css('width')) / 2) + 'px',
           left: '-' + parseInt($(removeBtn).css('width')) + 'px',
           display: 'inline-block',
           zIndex: 999992
-        })
-
-        $(removeBtn).on('mouseover', function () {
-          $(this).show();
-          $('.card-remove-btn').hide();
-        }).on('mouseout', function () {
-          setTimeout(function () {
-            $(removeBtn).hide();
-          }, 500);
         }).on('click', function () {
           $('.' + tmpId).remove();
           $(removeBtn).remove();
           _oldLine = '';
           return false;
-        })
+        });
 
+        return false;
+      }).on('mouseenter', function (){
+        clearTimeout(timer);
+        return false;
+      }).on('mousemove', function (){
+        $(this).css('background', '#09f');
+        return false;
       }).on('mouseleave', function (){
-        setTimeout(function () {
+        timer = setTimeout(function () {
+          $(line).css({
+            background: bgcolor,
+            transform: 'scale(1)'
+          });
           $(removeBtn).hide();
         }, 1000);
+      }).on('click', function (){
+        return false;
       })
-    } else {
-      $(line).addClass('pub_line');
     }
     return line;
   }
-  function _creAddLineBtn(tipMsg) {
+  function _creAddLineBtn(fontIcon, tipMsg, tips) {
     var addLineBtn = document.createElement('div');
 
     $(addLineBtn).css({
       position: 'absolute',
-      right: '-50px',
+      right: '-30px',
       cursor: 'pointer',
-      padding: 0,
-      width: '38px',
-    }).addClass('layui-btn layui-btn-radius layui-btn-primary').text('←');
+      color: '#ccc',
+      'font-size': 30 + 'px'
+    }).addClass(`layui-icon ${fontIcon}`);
 
-    _Tip(addLineBtn, tipMsg);
+    _Tip(addLineBtn, tipMsg, tips);
 
     return addLineBtn;
   }
   function initStartEndBtn(ev) {
-    var startBtn = _creAddLineBtn('添加顶部分隔线'),
-      endBtn = _creAddLineBtn('添加底部分隔线');
+    var startBtn = _creAddLineBtn('layui-icon-left', '添加顶部分隔线', 2),
+      endBtn = _creAddLineBtn('layui-icon-left', '添加底部分隔线', 2);
     
-    $(startBtn).css('top', '-21px').on('mousemove', function() {
+    $(startBtn).css('top', '-16px').on('mousemove', function() {
       contMove(ev, '0');
-      contentBox.off('mousemove');
-    }).on('mouseleave', function() {
-      contentBox.on('mousemove', contMove);
-    });
-    $(endBtn).css('bottom', '-15px').on('mousemove', function() {
+      return false;
+    })
+    $(endBtn).css('bottom', '-16px').on('mousemove', function() {
       contMove(ev, parseInt(contentBox.height()));
-      contentBox.off('mousemove');
-    }).on('mouseleave', function() {
-      contentBox.on('mousemove', contMove);
-    });
+      return false;
+    })
 
     contentBox.append(startBtn);
     contentBox.append(endBtn);
     
+  }
+  function initToolsBtn(ev) {
+    var oBtns = $('.top2-ools-box .addline');
+    
+    oBtns.each(function (index, node) {
+      $(node).on('click', function (){
+        contMove(ev, $(this).attr('data-px'));
+        addLine();
+      }).on('mouseenter', function (){
+        if ($(this).attr('data-px') === '100%'){
+          $(this).attr('data-px', contentBox.height()).attr('title', contentBox.height());
+        }
+      })
+    })    
   }
 
   function initScaleControls(){
@@ -190,30 +215,31 @@ layui.use(['element', 'layer'], function () {
     }
     
     subBtn.on('click', function (){
+      setFullScreenCenter();
       $('body').css({
         zoom: (_scale -= 0.25)
       });
-      setFullScreenCenter();
     })
     plusBtn.on('click', function (){
+      setFullScreenCenter();
       $('body').css({
         zoom: (_scale += 0.25)
       });
-      setFullScreenCenter();
     })
     initBtn.on('click', function (){
+      setFullScreenCenter();
       $('body').css({
         zoom: 1
       });
-      setFullScreenCenter();
       _scale = 1;
     })
   }
   function initContMenu(){
     $(window).on('scroll', function (){
       $(contmenu).hide();
-      
-      onContBoxEvent();
+    })
+    $(document).on('click', function (){
+        $(contmenu).hide();
     })
     $(contmenu).css({
       display: 'none',
@@ -223,18 +249,20 @@ layui.use(['element', 'layer'], function () {
       background: '#eee',
       border: 'solid 1px #aaa',
       zIndex: 999999
+    }).on('click', function () {
+      return false;
     })
     contentBox.append(contmenu);
   }
 
-  function setFullScreenCenter(s) {
+  function setFullScreenCenter(ev, node) {
     var clientWidth = document.documentElement.clientWidth;
-    var left = (parseInt(contentBox.css('width')) - clientWidth) / 2;
-    if (s) {
-      $(s).css('margin-left', -left + 'px');
+    var left = parseInt((parseInt(contentBox.css('width') * _scale) - clientWidth) / 2);
+    if (node) {
+      $(node).css('margin-left', -left + 'px');
     } else {
       contentBox.css('margin-left', -left + 'px');
-    }
+    }    
   }
   function _creMask() {
     var oDiv = document.createElement('div');
@@ -278,6 +306,7 @@ layui.use(['element', 'layer'], function () {
             'box-shadow': '0 0 5px #999'
           })
           
+          clearAll();
           setFullScreenCenter();
           console.log('IMG width:', img.width, ', height:', img.height);
         })
@@ -315,32 +344,26 @@ layui.use(['element', 'layer'], function () {
         removeBtn = document.createElement('div'),
         isOut;
 
-      $(removeBtn).attr('class', 'card-remove-btn');
+      $(removeBtn).addClass('remove-btn card-remove-btn');
       
+      $(_oDiv).addClass('card-mask card-' + idNum++);
+
       $(removeBtn).css({
         display: 'none',
+        'font-size': 30 + 'px',
+        color: '#0af',
         position: 'absolute',
-        'border-radius': '50%',
-        width: '30px',
-        height: '30px',
-        background: '#ccc',
-        color: 'red',
-        'text-align': 'center',
-        'line-height': '30px',
-        background: '#999',
-        zIndex: 999992,
         cursor: 'pointer'
-      }).text('X').on('mouseenter', function () {
-        contentBox.off('mousemove');
+      }).addClass('layui-icon layui-icon-close').on('mouseenter', function () {
         clearTimeout(isOut);
+        return false;
+      }).on('mousemove', function () {
+        return false;
       }).on('mouseleave', function () {
-        contentBox.on('mousemove', contMove);
         isOut = setTimeout(function () {
           $(removeBtn).hide();
         }, 500)
-      });
-
-      $(_oDiv).addClass('card-mask card-' + idNum++);
+      }).attr('title', `删除idNum：${idNum}面板`);
 
       contentBox.append(removeBtn);
 
@@ -353,9 +376,13 @@ layui.use(['element', 'layer'], function () {
         'background-repeat': 'no-repeat',
         'background-size': 'cover',
         filter: 'brightness(.8)'
+      }).on('mousemove', function (){
+        return false;
+      }).on('click', function (){
+        $(contmenu).is(':visible') && $(contmenu).hide();
+        return false;
       }).on('mouseenter', function (ev) {
-        $('.pub_line').hide();
-        offContBoxEvent();
+        $(_line).hide();
         $(removeBtn).css({
           top: parseInt($(_oDiv).css('top')) + (parseInt($(_oDiv).height()) / 2) - (parseInt($(removeBtn).height()) / 2) + 'px',
           right: '-' + $(removeBtn).css('width'),
@@ -363,29 +390,27 @@ layui.use(['element', 'layer'], function () {
         })
         clearTimeout(isOut);
       }).on('mouseleave', function () {
-        $('.pub_line').show();
-        onContBoxEvent();
+        $(_line).show();
         isOut = setTimeout(function () {
           $(removeBtn).hide();
         }, 500)
       }).on('contextmenu', function (ev) {
-          offContBoxEvent();
-          var removeBtn = document.createElement('button');
+        var removeBtn = document.createElement('button');
 
-          $(contmenu).html('');
+        $(contmenu).html('');
 
-          $(removeBtn).css({
-            width: '100%',
-            height: 30 + 'px'
-          }).text('删除节点');
+        $(removeBtn).css({
+          width: '100%',
+          height: 30 + 'px'
+        }).text('删除节点');
 
-          $(contmenu).append(removeBtn);
+        $(contmenu).append(removeBtn);
 
-          $(contmenu).css({
-            display: 'inline-block',
-            top: ev.clientY + 'px',
-            left: ev.clientX + 'px'
-          })
+        $(contmenu).css({
+          display: 'inline-block',
+          top: ev.clientY + 'px',
+          left: ev.clientX + 'px'
+        })
         
         return false;
       });
@@ -408,31 +433,29 @@ layui.use(['element', 'layer'], function () {
     _oldLine = line;
   }
 
-  function offContBoxEvent() {
-    $(contentBox).off('mousemove');
-    $(contentBox).off('click');
-  }
-  function onContBoxEvent() {
-    $(contentBox).on('mousemove', contMove);
-    $(contentBox).on('click', addLine);
-  }
-
   function exportsCanvas() {
-    var splitCards = contentBox.find('.split-card');
+    var splitCards = contentBox.find('.split-card'),
+      loading = layer.load(1, {shade: 0.5});;
 
-    clearOther();
+    setOther('hide');
+    setExportBoxWidth();
+    setFullScreenCenter(1, exportsBox);
     contentBox.find('.card-remove-btn').hide();
-
-    setFullScreenCenter(exportsBox);
     
     setTimeout(function () {
-      let i = 0;
+      let i = 0,
+        allLength = splitCards.length+1;
       for (let el of splitCards) {
         html2canvas(el).then(function (canvas) {
           exportsBox.append(canvas);
           i++;
+          layer.msg(`共：${allLength}个，第${i}个`, {
+            offset: 't'
+          });
           if (i === splitCards.length) {
+            layer.close(loading);
             layer.msg('输出完成');
+            setOther('show');
           }
         })
       }
@@ -442,11 +465,23 @@ layui.use(['element', 'layer'], function () {
     
   }
 
-  function clearOther() {
-    contentBox.find('.line').remove();
-    contentBox.find('.removeBtn').remove();
+  function setOther(method) {
+    method = method || 'remove';
+
+    if (method === 'remove') {
+      contentBox.find('.line').remove();
+      contentBox.find('.remove-btn').remove();
+    } else if (method === 'hide') {
+      contentBox.find('.line').hide();
+      contentBox.find('.remove-btn').hide();
+    } else if (method === 'show') {
+      contentBox.find('.line').show();
+    }
 
     topMsg();
+  }
+  function setExportBoxWidth() {
+    exportsBox.css('width', contentBox.css('width'));
   }
 
   function topMsg(msg) {
@@ -458,7 +493,7 @@ layui.use(['element', 'layer'], function () {
   }
 
   function clearAll() {
-    clearOther();
+    setOther('remove');
     contentBox.find('.mask').remove();
     contentBox.find('.card-remove-btn').remove();
 
@@ -467,7 +502,7 @@ layui.use(['element', 'layer'], function () {
 
   function toImage() {
     var canvas = $('#exports-box canvas');
-    testNullReturn();
+    isHaveCanvas();
     canvas.each(function (i, c) {
       $(c).replaceWith(canvasToImage(c));
     })
@@ -481,7 +516,7 @@ layui.use(['element', 'layer'], function () {
   function downImage() {
     contentBox.find('.line').remove();
     contentBox.find('.removeBtn').remove();
-    testNullReturn();
+    if (isHaveCanvas() === 'notCanvas')return;
 
     var exportImgs = $('#exports-box img');
 
@@ -495,9 +530,10 @@ layui.use(['element', 'layer'], function () {
     }
     
   }
-  function testNullReturn() {
+  function isHaveCanvas() {
     if (!exportsBox.html()) {
       layer.msg('没有转换canvas元素！');
+      return 'notCanvas';
     }
   }
   function clearExports() {

@@ -15,7 +15,7 @@
   .version {
     position: absolute;
     top: 30px;
-    right: 0;
+    right: 15px;
     font-size: 15px;
     color: #ccc;
   }
@@ -29,9 +29,8 @@
   text-align: center !important;
   margin: 0 auto !important;
 }
-
-.w100 {
-  width: 100%;
+.text-right {
+  text-align: right !important;
 }
 
 .float-right {
@@ -40,7 +39,10 @@
 
 .tools-box {
   margin: 10px 0;
-  box-shadow: 0 0 10px #999;
+  box-shadow: 0 2px 5px rgba(0,0,0,.2);
+  .layui-btn {
+    margin: 5px;
+  }
 }
 
 .main-content {
@@ -51,19 +53,11 @@
   box-shadow: 0 0 3px #ccc;
 }
 
-.layui-full-btn {
-  width: 100%;
-}
-
 h3 {
   margin: 10px 0;
   span {
     border-bottom: 1px solid #ccc;
   }
-}
-
-.scale-box button {
-  width: 50%;
 }
 
 #exports-box {
@@ -72,4 +66,9 @@ h3 {
   max-width: 90%;
   min-height: 200px;
   box-shadow: 0 0 3px #ccc;
+}
+
+.cont-title {
+  font-size: 16px;
+  line-height: 26px;
 }
