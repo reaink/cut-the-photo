@@ -14,7 +14,8 @@ layui.use(['element', 'layer'], function () {
     contmenu = document.createElement('div'),
     _oldLine,
     _scale = 1,
-    idNum = 0;
+    idNum = 0,
+    cardNum = 0;
 
   function initElement() {
 
@@ -337,16 +338,15 @@ layui.use(['element', 'layer'], function () {
 
     var line = _createLineDom('#00f');
 
-    console.log('add line of top:', $(_line).css('top'));
-
     if (_oldLine && parseInt($(_line).css('top')) > parseInt($(_oldLine).css('top'))) {
       var _oDiv = _creMask(),
         removeBtn = document.createElement('div'),
         isOut;
 
       $(removeBtn).addClass('remove-btn card-remove-btn');
-      
-      $(_oDiv).addClass('card-mask card-' + idNum++);
+      $(_oDiv).addClass('card-mask card-' + (idNum++) + ' ' + cardNum++);
+
+      console.log('add line of top:', $(_line).css('top'), 'cardNum: ', cardNum);
 
       $(removeBtn).css({
         display: 'none',
@@ -423,6 +423,8 @@ layui.use(['element', 'layer'], function () {
       })
 
       contentBox.append(_oDiv);
+    } else {
+      console.log('add line of top:', $(_line).css('top'));
     }
 
     $(line).css({
@@ -471,14 +473,15 @@ layui.use(['element', 'layer'], function () {
     if (method === 'remove') {
       contentBox.find('.line').remove();
       contentBox.find('.remove-btn').remove();
+      topMsg();
     } else if (method === 'hide') {
       contentBox.find('.line').hide();
       contentBox.find('.remove-btn').hide();
+      topMsg('已隐藏');
     } else if (method === 'show') {
       contentBox.find('.line').show();
     }
 
-    topMsg();
   }
   function setExportBoxWidth() {
     exportsBox.css('width', contentBox.css('width'));
@@ -487,9 +490,9 @@ layui.use(['element', 'layer'], function () {
   function topMsg(msg) {
     msg = msg || '已清除';
     layer.msg(msg, {
-      offset: 't',
-      anim: 6
-    });
+      time: 500,
+      offset: 't'
+    })
   }
 
   function clearAll() {
