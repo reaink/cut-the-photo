@@ -5,12 +5,13 @@
 layui.use(['element', 'layer'], function () {
   var $ = layui.$,
     layer = layui.layer
-    version = 'dev 1.3.0';
+    version = 'dev 1.3.1';
 
 
   var contentBox = $('.main-content'),
     exportsBox = $('#exports-box'),
     _line = _createLineDom('#00dffc', true),
+    contmenu = document.createElement('div'),
     _oldLine,
     _scale = 1,
     idNum = 0;
@@ -45,12 +46,18 @@ layui.use(['element', 'layer'], function () {
     $('#down-image').on('click', downImage)
     $('#clear-exports').on('click', clearExports)
 
+    setFullScreenCenter();
+    $(window).on('resize', setFullScreenCenter);
+
     initStartEndBtn();
     initScaleControls();
+    initContMenu();
 
 
     $('.version').text(version);
   }
+
+  initElement();
 
   function _Tip(el, msg) {
     var Tip;
@@ -64,8 +71,6 @@ layui.use(['element', 'layer'], function () {
       clearTimeout(Tip);
     })
   }
-
-  initElement();
 
   function _createLineDom(bgcolor, isglobal) {
     var line = document.createElement('div'),
@@ -93,11 +98,11 @@ layui.use(['element', 'layer'], function () {
       cursor: 'pointer'
     }).text('X');
 
-    $(removeBtn).attr('class', 'removeBtn');
+    $(removeBtn).addClass('removeBtn');
 
     contentBox.append(removeBtn);
 
-    $(line).attr('class', 'line line-' + idNum++);
+    $(line).addClass('line line-' + idNum++);
 
     if (!isglobal) {
       $(line).on('mouseover', function (ev) {
@@ -106,7 +111,7 @@ layui.use(['element', 'layer'], function () {
         
         $(removeBtn).css({
           top: parseInt($(this).css('top')) - (parseInt($(removeBtn).css('width')) / 2) + 'px',
-          left: ev.clientX - parseInt(contentBox.offset().left) - (parseInt($(removeBtn).css('width')) / 2) + 'px',
+          left: '-' + parseInt($(removeBtn).css('width')) + 'px',
           display: 'inline-block',
           zIndex: 999992
         })
@@ -117,16 +122,22 @@ layui.use(['element', 'layer'], function () {
         }).on('mouseout', function () {
           setTimeout(function () {
             $(removeBtn).hide();
-          }, 2000);
+          }, 500);
         }).on('click', function () {
           $('.' + tmpId).remove();
           $(removeBtn).remove();
+          _oldLine = '';
           return false;
         })
 
+      }).on('mouseleave', function (){
+        setTimeout(function () {
+          $(removeBtn).hide();
+        }, 1000);
       })
+    } else {
+      $(line).addClass('pub_line');
     }
-
     return line;
   }
   function _creAddLineBtn(tipMsg) {
@@ -170,8 +181,7 @@ layui.use(['element', 'layer'], function () {
     var subBtn = $('#scale-sub'),
       plusBtn =$('#scale-plus'),
       initBtn = $('#scale-init'),
-      _scale = 1
-      marginInit = contentBox.css('margin-bottom');
+      _scale = 1;
 
     initStyle = {
       width: contentBox.css('width'),
@@ -180,26 +190,51 @@ layui.use(['element', 'layer'], function () {
     }
     
     subBtn.on('click', function (){
-      contentBox.css({
-        transform: 'scale(' + (_scale -= 0.25) + ')',
-        margin: parseInt(parseInt(marginInit) * _scale) + 'px auto'
+      $('body').css({
+        zoom: (_scale -= 0.25)
       });
+      setFullScreenCenter();
     })
     plusBtn.on('click', function (){
-      contentBox.css({
-        transform: 'scale(' + (_scale += 0.25) + ')',
-        margin: parseInt(parseInt(marginInit) * _scale) + 'px auto',
+      $('body').css({
+        zoom: (_scale += 0.25)
       });
-      console.log('height: ',marginInit, 'scale: ', _scale, parseInt(parseInt(marginInit) * _scale) + 'px auto');
-      
+      setFullScreenCenter();
     })
     initBtn.on('click', function (){
-      contentBox.css({
-        transform: 'scale(1)',
-        margin: initStyle.margin
+      $('body').css({
+        zoom: 1
       });
+      setFullScreenCenter();
       _scale = 1;
     })
+  }
+  function initContMenu(){
+    $(window).on('scroll', function (){
+      $(contmenu).hide();
+      
+      onContBoxEvent();
+    })
+    $(contmenu).css({
+      display: 'none',
+      position: 'fixed',
+      width: 200 + 'px',
+      height: 300 + 'px',
+      background: '#eee',
+      border: 'solid 1px #aaa',
+      zIndex: 999999
+    })
+    contentBox.append(contmenu);
+  }
+
+  function setFullScreenCenter(s) {
+    var clientWidth = document.documentElement.clientWidth;
+    var left = (parseInt(contentBox.css('width')) - clientWidth) / 2;
+    if (s) {
+      $(s).css('margin-left', -left + 'px');
+    } else {
+      contentBox.css('margin-left', -left + 'px');
+    }
   }
   function _creMask() {
     var oDiv = document.createElement('div');
@@ -242,7 +277,8 @@ layui.use(['element', 'layer'], function () {
             'background-position': 'top center',
             'box-shadow': '0 0 5px #999'
           })
-
+          
+          setFullScreenCenter();
           console.log('IMG width:', img.width, ', height:', img.height);
         })
       };
@@ -291,8 +327,18 @@ layui.use(['element', 'layer'], function () {
         color: 'red',
         'text-align': 'center',
         'line-height': '30px',
+        background: '#999',
+        zIndex: 999992,
         cursor: 'pointer'
-      }).text('X');
+      }).text('X').on('mouseenter', function () {
+        contentBox.off('mousemove');
+        clearTimeout(isOut);
+      }).on('mouseleave', function () {
+        contentBox.on('mousemove', contMove);
+        isOut = setTimeout(function () {
+          $(removeBtn).hide();
+        }, 500)
+      });
 
       $(_oDiv).addClass('card-mask card-' + idNum++);
 
@@ -308,23 +354,40 @@ layui.use(['element', 'layer'], function () {
         'background-size': 'cover',
         filter: 'brightness(.8)'
       }).on('mouseenter', function (ev) {
+        $('.pub_line').hide();
+        offContBoxEvent();
         $(removeBtn).css({
-          top: ev.clientY - parseInt(contentBox.offset().top) - (parseInt($(removeBtn).css('height')) / 2) + parseInt($(window).scrollTop()) + 'px',
-          left: ev.clientX - parseInt(contentBox.offset().left) - (parseInt($(removeBtn).css('width')) / 2) + 'px',
-          display: 'inline-block',
-          background: '#999',
-          zIndex: 999992
-        }).on('mouseenter', function () {
-          clearTimeout(isOut);
-        }).on('mouseleave', function () {
-          isOut = setTimeout(function () {
-            $(removeBtn).hide();
-          }, 5000)
+          top: parseInt($(_oDiv).css('top')) + (parseInt($(_oDiv).height()) / 2) - (parseInt($(removeBtn).height()) / 2) + 'px',
+          right: '-' + $(removeBtn).css('width'),
+          display: 'inline-block'
         })
+        clearTimeout(isOut);
       }).on('mouseleave', function () {
+        $('.pub_line').show();
+        onContBoxEvent();
         isOut = setTimeout(function () {
           $(removeBtn).hide();
-        }, 1000)
+        }, 500)
+      }).on('contextmenu', function (ev) {
+          offContBoxEvent();
+          var removeBtn = document.createElement('button');
+
+          $(contmenu).html('');
+
+          $(removeBtn).css({
+            width: '100%',
+            height: 30 + 'px'
+          }).text('删除节点');
+
+          $(contmenu).append(removeBtn);
+
+          $(contmenu).css({
+            display: 'inline-block',
+            top: ev.clientY + 'px',
+            left: ev.clientX + 'px'
+          })
+        
+        return false;
       });
       $(removeBtn).on('click', function (){
         var tmpId = $(_oDiv).attr('class').split(' ')[3];
@@ -345,11 +408,22 @@ layui.use(['element', 'layer'], function () {
     _oldLine = line;
   }
 
+  function offContBoxEvent() {
+    $(contentBox).off('mousemove');
+    $(contentBox).off('click');
+  }
+  function onContBoxEvent() {
+    $(contentBox).on('mousemove', contMove);
+    $(contentBox).on('click', addLine);
+  }
+
   function exportsCanvas() {
     var splitCards = contentBox.find('.split-card');
 
     clearOther();
     contentBox.find('.card-remove-btn').hide();
+
+    setFullScreenCenter(exportsBox);
     
     setTimeout(function () {
       let i = 0;
@@ -421,17 +495,14 @@ layui.use(['element', 'layer'], function () {
     }
     
   }
-
   function testNullReturn() {
     if (!exportsBox.html()) {
       layer.msg('没有转换canvas元素！');
     }
   }
-
   function clearExports() {
     exportsBox.html('');
   }
-
   function download(name, data) {
     downloadFile(name, data);
   }
