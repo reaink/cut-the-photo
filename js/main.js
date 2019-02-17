@@ -5,7 +5,7 @@
 layui.use(['element', 'layer'], function () {
   var $ = layui.$,
     layer = layui.layer
-    version = 'beta 1.4.0';
+    version = 'beta 1.4.1';
 
 
   var contentBox = $('.main-content'),
