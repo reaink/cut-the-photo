@@ -27,11 +27,10 @@ layui.use(['element', 'layer'], function () {
       $(_line).remove();
     });
 
-    contentBox.on('mousemove', contMove)
-
-    contentBox.on('mousemove', contMove)
-
-    contentBox.on('click', addLine)
+    contentBox.on('contextmenu',function(ev){
+      _creContextMenuList(ev, [contentBox]);
+      return false;
+    }).on('mousemove', contMove).on('click', addLine)
 
     $('#clear-other').on('click', setOther);
     _Tip('#clear-other', '清除内容面板中：分割线与删除按钮');
@@ -430,49 +429,55 @@ layui.use(['element', 'layer'], function () {
 
   function _creContextMenuList(ev, nodes) {
     var removeBtn = __creEl('button'),
-      setBtn = __creEl('button'),
-      isLine = $(nodes[0]).hasClass('line'),
-      card = $(nodes[0]),
-      plateRemoveBtn = $(nodes[1]);
+      setBtn = __creEl('button');
     
     $(contmenu).html('');
 
-    $(removeBtn).css({
-      width: '100%',
-    }).addClass('layui-btn').text('删除节点').on('click', function(){
-      nodes.forEach(function (node) {
-        $(node).remove();
-      })
-      topMsg('已删除');
-      ContMenu().hide();
-    });
+    if ($(nodes[0]).attr('class') === 'main-content'){
+      $(contmenu).append('<div class="layui-field-box">主内容区</di>')
+    } else {
+      $(contmenu).append('<div class="layui-field-box">设置</di>')
+      var isLine = $(nodes[0]).hasClass('line'),
+      card = $(nodes[0]),
+      plateRemoveBtn = $(nodes[1]);
 
-    $(setBtn).css({
-      width: '100%',
-    }).addClass('layui-btn').text('设置节点').on('click', function(){
-      var setLayer = layer.open({
-        btn: ['设置', '取消'],
-        title: '设置当前版块',
-        content: `
-        <div id="set-plate-div">
-          <input class="layui-input card-name" type="text" placeholder="输入版块名称">
-        </div>
-        `,
-        success: function () {
-          $('#set-plate-div .card-name').focus();
-        },
-        yes: function (index){
-          card.append(`<span class="card-name">${$('#set-plate-div .card-name').val()}</span>`);
-          layer.close(setLayer);
-        },
-        btn2: function (index) {
-          layer.close(setLayer);
-        }
-      })
-    });
-
-    $(contmenu).append(removeBtn);
-    !isLine && $(contmenu).append(setBtn);
+      $(removeBtn).css({
+        width: '100%',
+      }).addClass('layui-btn').text('删除节点').on('click', function(){
+        nodes.forEach(function (node) {
+          $(node).remove();
+        })
+        topMsg('已删除');
+        ContMenu().hide();
+      });
+  
+      $(setBtn).css({
+        width: '100%',
+      }).addClass('layui-btn').text('设置节点').on('click', function(){
+        var setLayer = layer.open({
+          btn: ['设置', '取消'],
+          title: '设置当前版块',
+          content: `
+          <div id="set-plate-div">
+            <input class="layui-input card-name" type="text" placeholder="输入版块名称">
+          </div>
+          `,
+          success: function () {
+            $('#set-plate-div .card-name').focus();
+          },
+          yes: function (index){
+            card.append(`<span class="card-name">${$('#set-plate-div .card-name').val()}</span>`);
+            layer.close(setLayer);
+          },
+          btn2: function (index) {
+            layer.close(setLayer);
+          }
+        })
+      });
+  
+      $(contmenu).append(removeBtn);
+      !isLine && $(contmenu).append(setBtn);
+    }
 
     $(contmenu).css({
       display: 'inline-block',
