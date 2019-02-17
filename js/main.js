@@ -6,7 +6,7 @@ layui.use(['element', 'layer', 'form'], function () {
   var $ = layui.$,
     layer = layui.layer,
     form = layui.form,
-    version = 'beta 1.4.2';
+    version = 'beta 1.4.3';
 
 
   var contentBox = $('.main-content'),
@@ -141,6 +141,111 @@ layui.use(['element', 'layer', 'form'], function () {
     }).addClass('split-card mask');
 
     return oDiv;
+  }
+
+  function _creContextMenuList(ev, nodes) {
+    var removeBtn = __creEl('button'),
+      setBtn = __creEl('button'),
+      isMainContent = $(nodes[0]).hasClass('main-content'),
+      isCardMask = $(nodes[0]).hasClass('card-mask'),
+      isExportsBox = $(nodes[0]).hasClass('exports-box'),
+      isLine = $(nodes[0]).hasClass('line'),
+      card = $(nodes[0]);
+    
+    $(contmenu).html('');
+
+    if (isMainContent){
+      $(contmenu).append(`<div class="layui-field-box">设置 <small>${card.attr('class')}</small></div>`);
+      $(contmenu).append(``)
+    } else if (isCardMask || isLine) {
+      var setName = !isLine ? card.attr('class').split(' ')[4] : card.attr('class').split(' ')[1];
+
+      $(contmenu).append(`<div class="layui-field-box">设置 <small>${setName}</small></div>`)
+
+      $(removeBtn).css({
+        width: '100%',
+      }).addClass('layui-btn').text('删除节点').on('click', function(){
+        nodes.forEach(function (node) {
+          $(node).remove();
+        })
+        topMsg('已删除');
+        ContMenu().hide();
+      });
+  
+      $(setBtn).css({
+        width: '100%',
+      }).addClass('layui-btn').text('设置节点').on('click', function(){
+        var setLayer = layer.open({
+          btn: ['设置', '取消'],
+          title: '设置当前版块',
+          content: `
+          <div id="set-plate-div">
+            <form class="layui-form card-data-form">
+              <label>版块名称：</label>
+              <input class="layui-input card-name" type="text" placeholder="输入版块名称">
+              <span class="badge-box"></span>
+            </form>
+          </div>
+          `,
+          success: function () {
+            var here = this;
+            $('.card-data-form').on('submit', function (){
+              return false;
+            })
+            $('#set-plate-div .card-name').focus().keyup(function (ev){
+              if (ev.keyCode === 13 && $('#set-plate-div .card-name').val()){
+                here.isInputName();
+                return false;
+              } else if (ev.keyCode === 13 && !$('#set-plate-div .card-name').val()) {
+                here.notInputName();
+              }
+            });
+
+            ContMenu().hide();
+          },
+          yes: function (index){
+            if ($('#set-plate-div .card-name').val()){
+              this.isInputName();
+              return false;
+            } else if (!$('#set-plate-div .card-name').val()) {
+              this.notInputName();
+            }
+          },
+          isInputName: function (){
+            if (!card.find('.card-name').get(0)){
+              card.append(`<span class="card-name">${$('#set-plate-div .card-name').val()}</span>`);
+            } else {
+              card.find('.card-name').html(`<span class="card-name">${$('#set-plate-div .card-name').val()}</span>`);
+            }
+            layer.close(setLayer);
+          },
+          notInputName: function (){
+            $('#set-plate-div .badge-box').html('<span class="layui-badge-dot"></span> <span>内容不能为空</span>');
+          },
+          btn2: function (index) {
+            layer.close(setLayer);
+          }
+        })
+      });
+  
+      $(contmenu).append(removeBtn);
+      !isLine && $(contmenu).append(setBtn);
+    } else if (isExportsBox){
+      $(nodes[1]).each(function (index, el) {
+        $(el).on('contextmenu', function () {
+          $(contmenu).html('').append(`<div class="layui-field-box">设置 <small>${$(el).attr('class')}</small></div>`);
+          return false;
+        })
+      })
+    } else {
+      $(contmenu).append(`<div class="layui-field-box">设置 <small>${card.attr('class')}</small></div>`);
+    }
+
+    $(contmenu).css({
+      display: 'inline-block',
+      top: ev.clientY + 'px',
+      left: ev.clientX + 'px'
+    })
   }
   function __creEl(name) {
     return document.createElement(name);
@@ -441,89 +546,6 @@ layui.use(['element', 'layer', 'form'], function () {
     _oldLine = line;
   }
 
-  function _creContextMenuList(ev, nodes) {
-    var removeBtn = __creEl('button'),
-      setBtn = __creEl('button'),
-      isMainContent = $(nodes[0]).hasClass('main-content'),
-      isCardMask = $(nodes[0]).hasClass('card-mask'),
-      isExportsBox = $(nodes[0]).hasClass('exports-box'),
-      isLine = $(nodes[0]).hasClass('line');
-    
-    $(contmenu).html('');
-
-    if (isMainContent){
-      $(contmenu).append('<div class="layui-field-box">设置</div>');
-    } else if (isCardMask || isLine) {
-      $(contmenu).append('<div class="layui-field-box">设置</di>')
-      var card = $(nodes[0]),
-      plateRemoveBtn = $(nodes[1]);
-
-      $(removeBtn).css({
-        width: '100%',
-      }).addClass('layui-btn').text('删除节点').on('click', function(){
-        nodes.forEach(function (node) {
-          $(node).remove();
-        })
-        topMsg('已删除');
-        ContMenu().hide();
-      });
-  
-      $(setBtn).css({
-        width: '100%',
-      }).addClass('layui-btn').text('设置节点').on('click', function(){
-        var setLayer = layer.open({
-          btn: ['设置', '取消'],
-          title: '设置当前版块',
-          content: `
-          <div id="set-plate-div">
-            <form class="layui-form card-data-form">
-              <input class="layui-input card-name" type="text" required="required" placeholder="输入版块名称">
-            </form>
-          </div>
-          `,
-          success: function () {
-            var here = this;
-            $('.card-data-form').on('submit', function (){
-              return false;
-            })
-            $('#set-plate-div .card-name').focus().keyup(function (ev){
-              if (ev.keyCode === 13 && $('#set-plate-div .card-name').val()){
-                here.yes();
-                return false;
-              } else {
-                // topMsg('版块名称不能为空！', {
-                //   time: 2000,
-                //   anim: 1
-                // })
-              }
-            });
-            ContMenu().hide();
-          },
-          yes: function (index){
-            card.append(`<span class="card-name">${$('#set-plate-div .card-name').val()}</span>`);
-            layer.close(setLayer);
-          },
-          btn2: function (index) {
-            layer.close(setLayer);
-          }
-        })
-      });
-  
-      $(contmenu).append(removeBtn);
-      !isLine && $(contmenu).append(setBtn);
-    } else if (isExportsBox){
-      $(contmenu).append('<div class="layui-field-box">设置</div>');
-    } else {
-      $(contmenu).append('<div class="layui-field-box">未知区域</div>');
-    }
-
-    $(contmenu).css({
-      display: 'inline-block',
-      top: ev.clientY + 'px',
-      left: ev.clientX + 'px'
-    })
-  }
-
   function exportsCanvas() {
     var splitCards = contentBox.find('.split-card');
 
@@ -539,11 +561,13 @@ layui.use(['element', 'layer', 'form'], function () {
     setTimeout(function () {
       let i = 0,
         allLength = splitCards.length+1,
-        aClass;
+        aClass,
+        setNameClass;
       for (let el of splitCards) {
         html2canvas(el).then(function (canvas) {
           aClass = $(el).attr('class').split(' ');
-          $(canvas).attr('class', aClass[4]);
+          setNameClass = $(el).find('.card-name').text();
+          $(canvas).addClass(aClass[4]).addClass(setNameClass);
           exportsBox.append(canvas);
           i++;
           layer.msg(`共：${allLength}个，第${i}个`, {
@@ -556,9 +580,12 @@ layui.use(['element', 'layer', 'form'], function () {
             });
             setOther('show');
             setExportsCanvasContextMenu();
+            _creContextMenuList(1, [exportsBox, exportsBox.find('canvas')]);
+            ContMenu().hide();
           }
         })
       }
+      
     }, 100)
 
     $('#down-image').text('转换图片');
@@ -616,7 +643,7 @@ layui.use(['element', 'layer', 'form'], function () {
     $('#exports-box canvas').each(function (i, c) {
       $(c).replaceWith(canvasToImage(c));
     })
-    
+  
   }
   function sortCanvas() {
     var nNum, oNum, cloneNode;
@@ -636,8 +663,9 @@ layui.use(['element', 'layer', 'form'], function () {
     })
   }
   function canvasToImage(canvas) {
-    var img = document.createElement('img');
-    img.src =  canvas.toDataURL("image/jpg");
+    var img = __creEl('img');
+    $(img).attr('src', canvas.toDataURL("image/jpg"))
+    .addClass($(canvas).attr('class').split(' ')[1])
     return img;
   }
   function downImage() {
@@ -652,7 +680,7 @@ layui.use(['element', 'layer', 'form'], function () {
       $('#down-image').text('点击下载');
     } else {
       exportImgs.each(function (i, val) {
-        download('pro' + i, $(val).attr('src'));
+        download($(val).attr('class'), $(val).attr('src'));
       })
     }
     
