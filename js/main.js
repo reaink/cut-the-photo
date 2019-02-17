@@ -51,7 +51,7 @@ layui.use(['element', 'layer'], function () {
 
     initStartEndBtn();
     initScaleControls();
-    initContMenu();
+    ContMenu();
     initToolsBtn();
     $('.version').text(version);
 
@@ -151,6 +151,9 @@ layui.use(['element', 'layer'], function () {
         }, 1000);
       }).on('click', function (){
         return false;
+      }).on('contextmenu', function (ev){
+        _creContextMenuList(ev, [line, removeBtn]);
+        return false;
       })
     }
     return line;
@@ -234,7 +237,7 @@ layui.use(['element', 'layer'], function () {
       _scale = 1;
     })
   }
-  function initContMenu(){
+  function ContMenu(){
     $(window).on('scroll', function (){
       $(contmenu).hide();
     })
@@ -245,14 +248,17 @@ layui.use(['element', 'layer'], function () {
       display: 'none',
       position: 'fixed',
       width: 200 + 'px',
-      height: 300 + 'px',
+      height: 230 + 'px',
       background: '#eee',
       border: 'solid 1px #aaa',
       zIndex: 999999
     }).on('click', function () {
       return false;
-    })
+    }).attr('class', 'contextMenu');
+
     contentBox.append(contmenu);
+
+    return $(contmenu);
   }
 
   function setFullScreenCenter(ev, node) {
@@ -394,23 +400,7 @@ layui.use(['element', 'layer'], function () {
           $(removeBtn).hide();
         }, 500)
       }).on('contextmenu', function (ev) {
-        var removeBtn = document.createElement('button');
-
-        $(contmenu).html('');
-
-        $(removeBtn).css({
-          width: '100%',
-          height: 30 + 'px'
-        }).text('删除节点');
-
-        $(contmenu).append(removeBtn);
-
-        $(contmenu).css({
-          display: 'inline-block',
-          top: ev.clientY + 'px',
-          left: ev.clientX + 'px'
-        })
-        
+        _creContextMenuList(ev, [_oDiv, removeBtn]);
         return false;
       });
       $(removeBtn).on('click', function (){
@@ -432,6 +422,63 @@ layui.use(['element', 'layer'], function () {
 
     contentBox.append(line);
     _oldLine = line;
+  }
+
+  function __creEl(name) {
+    return document.createElement(name);
+  }
+
+  function _creContextMenuList(ev, nodes) {
+    var removeBtn = __creEl('button'),
+      setBtn = __creEl('button'),
+      isLine = $(nodes[0]).hasClass('line'),
+      card = $(nodes[0]),
+      plateRemoveBtn = $(nodes[1]);
+    
+    $(contmenu).html('');
+
+    $(removeBtn).css({
+      width: '100%',
+    }).addClass('layui-btn').text('删除节点').on('click', function(){
+      nodes.forEach(function (node) {
+        $(node).remove();
+      })
+      topMsg('已删除');
+      ContMenu().hide();
+    });
+
+    $(setBtn).css({
+      width: '100%',
+    }).addClass('layui-btn').text('设置节点').on('click', function(){
+      var setLayer = layer.open({
+        btn: ['设置', '取消'],
+        title: '设置当前版块',
+        content: `
+        <div id="set-plate-div">
+          <input class="layui-input card-name" type="text" placeholder="输入版块名称">
+        </div>
+        `,
+        success: function () {
+          $('#set-plate-div .card-name').focus();
+        },
+        yes: function (index){
+          card.append(`<span class="card-name">${$('#set-plate-div .card-name').val()}</span>`);
+          layer.close(setLayer);
+        },
+        btn2: function (index) {
+          layer.close(setLayer);
+        }
+      })
+    });
+
+    $(contmenu).append(removeBtn);
+    !isLine && $(contmenu).append(setBtn);
+
+    $(contmenu).css({
+      display: 'inline-block',
+      top: ev.clientY + 'px',
+      left: ev.clientX + 'px'
+    })
   }
 
   function exportsCanvas() {
