@@ -2,80 +2,39 @@
 * @author sr_<nmlixa@163.com>
 * @date  2019/02/14 15:30:25
 */
-layui.use(['element', 'layer'], function () {
+layui.use(['element', 'layer', 'form'], function () {
   var $ = layui.$,
-    layer = layui.layer
-    version = 'beta 1.4.1';
+    layer = layui.layer,
+    form = layui.form,
+    version = 'beta 1.4.2';
 
 
   var contentBox = $('.main-content'),
     exportsBox = $('#exports-box'),
     _line = _createLineDom('#00dffc', true),
-    contmenu = document.createElement('div'),
+    contmenu = __creEl('div'),
     _oldLine,
     _scale = 1,
     idNum = 1,
     cardNum = 1;
 
   function initElement() {
-    $('#upload-img').on('change', uploadImg);
+    //control
+    initControlBtnsEvent();
+    initInternal();
 
-    contentBox.on('mouseenter', function () {
-      $(contentBox).append(_line);
-    });
-    contentBox.on('mouseleave', function () {
-      $(_line).remove();
-    });
-
-    contentBox.on('contextmenu',function(ev){
-      _creContextMenuList(ev, [contentBox]);
-      return false;
-    }).on('mousemove', contMove).on('click', addLine)
-
-    $('#clear-other').on('click', setOther);
-    _Tip('#clear-other', '清除内容面板中：分割线与删除按钮');
-
-    $('#clear-all').on('click', clearAll);
-    _Tip('#clear-all', '清除内容面板中：分割线、删除按钮、遮罩面板');
-
-    $('#split-create').on('click', exportsCanvas)
-    _Tip('#split-create', '输出选中遮罩面板到输出区');
-
-    $('#to-image').on('click', toImage)
-    $('#down-image').on('click', downImage)
-    $('#clear-exports').on('click', clearExports)
-
-    setFullScreenCenter();
-    $(window).on('resize', setFullScreenCenter);
-
+    //view
+    initContentBox();
+    initSetFullCenter();
     initStartEndBtn();
     initScaleControls();
     ContMenu();
     initToolsBtn();
-    $('.version').text(version);
-
     setExportBoxWidth();
 
+    //other
+    setVersionView();
   }
-
-  initElement();
-
-  function _Tip(el, msg, tips) {
-    var Tip;
-
-    tips = tips || 3;
-
-    $(el).on('mouseenter', function () {
-      Tip = setTimeout(function () {
-        layer.tips(msg, el, {
-          tips: tips
-        });
-      }, 1000);
-    }).on('mouseleave', function () {
-      clearTimeout(Tip);
-    })
-  }
-
   function _createLineDom(bgcolor, isglobal) {
     var line = document.createElement('div'),
       removeBtn = document.createElement('i'),
@@ -172,6 +131,54 @@ layui.use(['element', 'layer'], function () {
 
     return addLineBtn;
   }
+  function _creMask() {
+    var oDiv = document.createElement('div');
+
+    $(oDiv).css({
+      display: 'inline-block',
+      width: '100%',
+      background: 'rgba(0,0,0,.8)'
+    }).addClass('split-card mask');
+
+    return oDiv;
+  }
+  function __creEl(name) {
+    return document.createElement(name);
+  }
+  function _Tip(el, msg, tips) {
+    var Tip;
+
+    tips = tips || 3;
+
+    $(el).on('mouseenter', function () {
+      Tip = setTimeout(function () {
+        layer.tips(msg, el, {
+          tips: tips
+        });
+      }, 1000);
+    }).on('mouseleave', function () {
+      clearTimeout(Tip);
+    })
+  }
+  function setVersionView() {
+    $('.version').text(version);
+  }
+
+  function initInternal() {
+  }
+  function initContentBox() {
+    contentBox.on('mouseenter', function () {
+      $(contentBox).append(_line);
+    });
+    contentBox.on('mouseleave', function () {
+      $(_line).remove();
+    });
+
+    contentBox.on('contextmenu',function(ev){
+      _creContextMenuList(ev, [contentBox]);
+      return false;
+    }).on('mousemove', contMove).on('click', addLine)
+  }
   function initStartEndBtn(ev) {
     var startBtn = _creAddLineBtn('layui-icon-left', '添加顶部分隔线', 2),
       endBtn = _creAddLineBtn('layui-icon-left', '添加底部分隔线', 2);
@@ -189,6 +196,10 @@ layui.use(['element', 'layer'], function () {
     contentBox.append(endBtn);
     
   }
+  function initSetFullCenter() {
+    setFullScreenCenter();
+    $(window).on('resize', setFullScreenCenter);   
+  }
   function initToolsBtn(ev) {
     var oBtns = $('.top2-ools-box .addline');
     
@@ -197,18 +208,33 @@ layui.use(['element', 'layer'], function () {
         contMove(ev, $(this).attr('data-px'));
         addLine();
       }).on('mouseenter', function (){
-        if ($(this).attr('data-px') === '100%'){
+        if ($(this).attr('data-name') === 'end-btn'){
           $(this).attr('data-px', contentBox.height()).attr('title', contentBox.height());
         }
       })
     })    
   }
+  function initControlBtnsEvent() {
+    $('#upload-img').on('change', uploadImg);
+
+    $('#clear-other').on('click', setOther);
+    _Tip('#clear-other', '清除内容面板中：分割线与删除按钮');
+
+    $('#clear-all').on('click', clearAll);
+    _Tip('#clear-all', '清除内容面板中：分割线、删除按钮、遮罩面板');
+
+    $('#split-create').on('click', exportsCanvas)
+    _Tip('#split-create', '输出选中遮罩面板到输出区');
+
+    $('#to-image').on('click', toImage)
+    $('#down-image').on('click', downImage)
+    $('#clear-exports').on('click', clearExports)  
+  }
 
   function initScaleControls(){
     var subBtn = $('#scale-sub'),
       plusBtn =$('#scale-plus'),
-      initBtn = $('#scale-init'),
-      _scale = 1;
+      initBtn = $('#scale-init');
 
     initStyle = {
       width: contentBox.css('width'),
@@ -247,38 +273,28 @@ layui.use(['element', 'layer'], function () {
       display: 'none',
       position: 'fixed',
       width: 200 + 'px',
-      height: 230 + 'px',
       background: '#eee',
       border: 'solid 1px #aaa',
       zIndex: 999999
+    }).on('mousemove', function () {
+      return false;
     }).on('click', function () {
       return false;
     }).attr('class', 'contextMenu');
 
-    contentBox.append(contmenu);
+    $('body').append(contmenu);
 
     return $(contmenu);
   }
 
   function setFullScreenCenter(ev, node) {
     var clientWidth = document.documentElement.clientWidth;
-    var left = parseInt((parseInt(contentBox.css('width') * _scale) - clientWidth) / 2);
+    var left = parseInt((parseInt(parseInt(contentBox.css('width')) * _scale) - clientWidth) / 2);
     if (node) {
       $(node).css('margin-left', -left + 'px');
     } else {
       contentBox.css('margin-left', -left + 'px');
-    }    
-  }
-  function _creMask() {
-    var oDiv = document.createElement('div');
-
-    $(oDiv).css({
-      display: 'inline-block',
-      width: '100%',
-      background: 'rgba(0,0,0,.8)'
-    }).addClass('split-card mask');
-
-    return oDiv;
+    }
   }
 
   function uploadImg() {
@@ -287,7 +303,9 @@ layui.use(['element', 'layer'], function () {
       imageType = /images*/;
     
     if (!file.type.match(imageType)) {
-      layer.msg('请选择一张图片！');
+      layer.msg('请选择一张图片！', {
+        time: 2000
+      });
       return;
     } else {
       var reader = new FileReader();
@@ -423,22 +441,21 @@ layui.use(['element', 'layer'], function () {
     _oldLine = line;
   }
 
-  function __creEl(name) {
-    return document.createElement(name);
-  }
-
   function _creContextMenuList(ev, nodes) {
     var removeBtn = __creEl('button'),
-      setBtn = __creEl('button');
+      setBtn = __creEl('button'),
+      isMainContent = $(nodes[0]).hasClass('main-content'),
+      isCardMask = $(nodes[0]).hasClass('card-mask'),
+      isExportsBox = $(nodes[0]).hasClass('exports-box'),
+      isLine = $(nodes[0]).hasClass('line');
     
     $(contmenu).html('');
 
-    if ($(nodes[0]).attr('class') === 'main-content'){
-      $(contmenu).append('<div class="layui-field-box">主内容区</di>')
-    } else {
+    if (isMainContent){
+      $(contmenu).append('<div class="layui-field-box">设置</div>');
+    } else if (isCardMask || isLine) {
       $(contmenu).append('<div class="layui-field-box">设置</di>')
-      var isLine = $(nodes[0]).hasClass('line'),
-      card = $(nodes[0]),
+      var card = $(nodes[0]),
       plateRemoveBtn = $(nodes[1]);
 
       $(removeBtn).css({
@@ -459,11 +476,28 @@ layui.use(['element', 'layer'], function () {
           title: '设置当前版块',
           content: `
           <div id="set-plate-div">
-            <input class="layui-input card-name" type="text" placeholder="输入版块名称">
+            <form class="layui-form card-data-form">
+              <input class="layui-input card-name" type="text" required="required" placeholder="输入版块名称">
+            </form>
           </div>
           `,
           success: function () {
-            $('#set-plate-div .card-name').focus();
+            var here = this;
+            $('.card-data-form').on('submit', function (){
+              return false;
+            })
+            $('#set-plate-div .card-name').focus().keyup(function (ev){
+              if (ev.keyCode === 13 && $('#set-plate-div .card-name').val()){
+                here.yes();
+                return false;
+              } else {
+                // topMsg('版块名称不能为空！', {
+                //   time: 2000,
+                //   anim: 1
+                // })
+              }
+            });
+            ContMenu().hide();
           },
           yes: function (index){
             card.append(`<span class="card-name">${$('#set-plate-div .card-name').val()}</span>`);
@@ -477,6 +511,10 @@ layui.use(['element', 'layer'], function () {
   
       $(contmenu).append(removeBtn);
       !isLine && $(contmenu).append(setBtn);
+    } else if (isExportsBox){
+      $(contmenu).append('<div class="layui-field-box">设置</div>');
+    } else {
+      $(contmenu).append('<div class="layui-field-box">未知区域</div>');
     }
 
     $(contmenu).css({
@@ -489,7 +527,8 @@ layui.use(['element', 'layer'], function () {
   function exportsCanvas() {
     var splitCards = contentBox.find('.split-card');
 
-    if(!isHaveContCard()) return;
+    if (!isHaveContCard()) return;
+    if (!isDetectZoom()) return;
 
     var loading = layer.load(1, {shade: 0.5});
     setOther('hide');
@@ -512,8 +551,11 @@ layui.use(['element', 'layer'], function () {
           });
           if (i === splitCards.length) {
             layer.close(loading);
-            layer.msg('输出完成');
+            layer.msg('输出完成', {
+              time: 2000
+            });
             setOther('show');
+            setExportsCanvasContextMenu();
           }
         })
       }
@@ -527,26 +569,34 @@ layui.use(['element', 'layer'], function () {
     method = method || 'remove';
 
     if (method === 'remove') {
-      contentBox.find('.line').remove();
-      contentBox.find('.remove-btn').remove();
+      contentBox.find('.line,.remove-btn,.card-name').remove();
       topMsg();
     } else if (method === 'hide') {
-      contentBox.find('.line').hide();
-      contentBox.find('.remove-btn').hide();
+      contentBox.find('.line,.remove-btn,.card-name').hide();
+      contentBox.find('').hide();
+      contentBox.find('').hide();
       topMsg('已隐藏');
     } else if (method === 'show') {
-      contentBox.find('.line').show();
+      contentBox.find('.line,.card-name').show();
     }
 
   }
   function setExportBoxWidth() {
     exportsBox.css('width', contentBox.css('width'));
   }
+  function setExportsCanvasContextMenu() {
+    var canvas = exportsBox.find('canvas');
+
+    canvas.on('contextmenu', function (ev) {
+      _creContextMenuList(ev, [exportsBox, canvas]);
+      return false;
+    })
+  }
 
   function topMsg(msg) {
     msg = msg || '已清除';
     layer.msg(msg, {
-      time: 500,
+      time: 2000,
       offset: 't'
     })
   }
@@ -609,13 +659,17 @@ layui.use(['element', 'layer'], function () {
   }
   function isHaveCanvas() {
     if (!exportsBox.html()) {
-      layer.msg('没有转换canvas元素！');
+      layer.msg('没有转换canvas元素！', {
+        time: 2000
+      });
       return 'notCanvas';
     }
   }
   function isHaveContCard() {
     if (!contentBox.find('.card-mask').get(0)) {
-      layer.msg('没有card-mask层！');
+      layer.msg('没有card-mask层！', {
+        time: 2000
+      });
       return false;
     } else {
       return true;
@@ -651,4 +705,38 @@ layui.use(['element', 'layer'], function () {
     }
     return new Blob([uInt8Array], {type: contentType});
   }
+  function detectZoom (){
+    var ratio = 0,
+      screen = window.screen,
+      ua = navigator.userAgent.toLowerCase();
+   
+     if (window.devicePixelRatio !== undefined) {
+        ratio = window.devicePixelRatio;
+    }
+    else if (~ua.indexOf('msie')) {  
+      if (screen.deviceXDPI && screen.logicalXDPI) {
+        ratio = screen.deviceXDPI / screen.logicalXDPI;
+      }
+    }
+    else if (window.outerWidth !== undefined && window.innerWidth !== undefined) {
+      ratio = window.outerWidth / window.innerWidth;
+    }
+     
+     if (ratio){
+      ratio = Math.round(ratio * 100);
+    }
+     
+     return ratio;
+  }
+  function isDetectZoom() {
+    var isZoom = detectZoom() === 100;
+    
+    if (!isZoom) {
+      topMsg('当前缩放比例不是100%');
+    }
+    return isZoom;
+  }
+  
+
+  initElement();
 });
