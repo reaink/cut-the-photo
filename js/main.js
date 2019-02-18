@@ -13,7 +13,7 @@ layui.use(['element', 'layer', 'form'], function () {
     exportsBox = $('#exports-box'),
     _line = _createLineDom('#00dffc', true),
     contmenu = __creEl('div'),
-    _oldLine,
+    _oldLines = [],
     _scale = 1,
     idNum = 1,
     cardNum = 1;
@@ -35,7 +35,7 @@ layui.use(['element', 'layer', 'form'], function () {
     //other
     setVersionView();
   }
-  function _createLineDom(bgcolor, isglobal) {
+  function _createLineDom(bgcolor, isglobal, cardId) {
     var line = document.createElement('div'),
       removeBtn = document.createElement('i'),
       timer;
@@ -76,7 +76,7 @@ layui.use(['element', 'layer', 'form'], function () {
 
       $(line).on('mouseover', function (ev) {
         ev = ev || event;
-        var tmpId = $(this).attr('class').split(' ')[1];
+        var lineId = $(this).attr('class').split(' ')[1];
 
         $(this).css('transform', 'scaleY(5)');
         
@@ -86,9 +86,10 @@ layui.use(['element', 'layer', 'form'], function () {
           display: 'inline-block',
           zIndex: 999992
         }).on('click', function () {
-          $('.' + tmpId).remove();
+          $('.' + lineId).remove();
           $(removeBtn).remove();
-          _oldLine = '';
+          _oldLines.pop();
+          cardId.remove();
           return false;
         });
 
@@ -463,11 +464,10 @@ layui.use(['element', 'layer', 'form'], function () {
   function addLine(ev) {
     ev = ev || event;
 
-    var line = _createLineDom('#00f');
-
-    if (_oldLine && parseInt($(_line).css('top')) > parseInt($(_oldLine).css('top'))) {
+    if (_oldLines && parseInt($(_line).css('top')) > parseInt($(_oldLines[_oldLines.length - 1]).css('top'))) {
       var _oDiv = _creMask(),
         removeBtn = document.createElement('div'),
+        line = _createLineDom('#00f', false, _oDiv),
         isOut;
 
       $(removeBtn).addClass('remove-btn card-remove-btn');
@@ -496,10 +496,10 @@ layui.use(['element', 'layer', 'form'], function () {
 
       $(_oDiv).css({
         position: 'absolute',
-        top: parseInt($(_oldLine).css('top')) - 1 + 'px',
-        height: parseInt($(_line).css('top')) - parseInt($(_oldLine).css('top')) + 'px',
+        top: parseInt($(_oldLines[_oldLines.length - 1]).css('top')) - 1 + 'px',
+        height: parseInt($(_line).css('top')) - parseInt($(_oldLines[_oldLines.length - 1]).css('top')) + 'px',
         'background-image': contentBox.css('background-image'),
-        'background-position': 0 + ' ' + -parseInt($(_oldLine).css('top')) + 'px',
+        'background-position': 0 + ' ' + -parseInt($(_oldLines[_oldLines.length - 1]).css('top')) + 'px',
         'background-repeat': 'no-repeat',
         'background-size': 'cover',
         filter: 'brightness(.8)'
@@ -535,6 +535,7 @@ layui.use(['element', 'layer', 'form'], function () {
 
       contentBox.append(_oDiv);
     } else {
+      var line = _createLineDom('#00f');
       console.log('add line of top:', $(_line).css('top'));
     }
 
@@ -543,7 +544,7 @@ layui.use(['element', 'layer', 'form'], function () {
     })
 
     contentBox.append(line);
-    _oldLine = line;
+    _oldLines.push(line);
   }
 
   function exportsCanvas() {
