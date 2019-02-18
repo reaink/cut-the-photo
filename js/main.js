@@ -494,8 +494,6 @@ layui.use(['element', 'layer', 'form'], function () {
   function addLine(ev) {
     ev = ev || event;
     
-    console.log(parseInt($(_line).css('top')), parseInt($(_oldLines[_oldLines.length - 1]).css('top')));
-    
     if (_oldLines && parseInt($(_line).css('top')) > parseInt($(_oldLines[_oldLines.length - 1]).css('top'))) {
       var _oDiv = _creMask(),
         removeBtn = document.createElement('div'),
