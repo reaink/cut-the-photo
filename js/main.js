@@ -6,7 +6,7 @@ layui.use(['element', 'layer', 'form'], function () {
   var $ = layui.$,
     layer = layui.layer,
     form = layui.form,
-    version = 'beta 1.4.5';
+    version = 'beta 1.4.6';
 
 
   var contentBox = $('.main-content'),
@@ -150,29 +150,28 @@ layui.use(['element', 'layer', 'form'], function () {
   function _creContextMenuList(ev, nodes) {
     var removeBtn = __creEl('button'),
       setBtn = __creEl('button'),
+      addBtn = __creEl('button'),
       isMainContent = $(nodes[0]).hasClass('main-content'),
       isCardMask = $(nodes[0]).hasClass('card-mask'),
       isExportsBox = $(nodes[0]).hasClass('exports-box'),
       isLine = $(nodes[0]).hasClass('line'),
-      card = $(nodes[0]);
+      isCustom = $(nodes[0]).hasClass('add-plate'),
+      card = $(nodes[0]),
+      cardBack,
+      setName = '',
+      setLayer;
     
     $(contmenu).html('');
 
     if (isMainContent){
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${card.attr('class')}</small></div>`);
       $(contmenu).append(``)
-    } else if (isCardMask || isLine) {
-      var setName = '';
-
+    } else if (isCardMask) {
       //setName
-      if (!isLine) {
-        if (card.find('.card-name').get(0)) {
-          setName = card.find('.card-name').text();
-        } else {
-          setName = card.attr('class').split(' ')[4];
-        }
+      if (card.find('.card-name').get(0)) {
+        setName = card.find('.card-name').text();
       } else {
-        setName = card.attr('class').split(' ')[1];
+        setName = card.attr('class').split(' ')[4];
       }
 
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${setName}</small></div>`)
@@ -192,7 +191,7 @@ layui.use(['element', 'layer', 'form'], function () {
       $(setBtn).css({
         width: '100%',
       }).addClass('layui-btn').text('设置节点').on('click', function(){
-        var setLayer = layer.open({
+        setLayer = layer.open({
           btn: ['设置', '取消'],
           title: '设置当前版块',
           content: `
@@ -244,9 +243,99 @@ layui.use(['element', 'layer', 'form'], function () {
           }
         })
       });
+
+      $(addBtn).css({
+        width: '100%',
+      }).addClass('layui-btn').text('添加节点').on('click', function () {
+        setLayer = layer.open({
+          btn: ['设置', '取消'],
+          title: '添加节点',
+          content: `
+          <div id="set-plate-div">
+            <form class="layui-form card-data-form">
+              <label>元素名称：</label>
+              <input class="layui-input el-name" type="text" placeholder="输入元素名称" value="div" required="required">
+              <label>元素内容：</label>
+              <input class="layui-input el-cont" type="text" placeholder="输入元素内容" required="required">
+              <label>元素样式：</label>
+              <input class="layui-input el-style" type="text" placeholder="输入元素样式" required="required">
+            </form>
+          </div>
+          `,
+          success: function () {
+            var elCont = $('#set-plate-div .el-cont');
+            $('.card-data-form').on('submit', function (){
+              return false;
+            })
+
+            ContMenu().hide();
+            elCont.focus();
+          },
+          yes: function (index){
+            var setDiv = $('#set-plate-div'),
+              setElName = setDiv.find('.el-name').val(),
+              setElCont = setDiv.find('.el-cont').val(),
+              setElStyle = setDiv.find('.el-style').val();
+
+            card.on('mousedown', function (ev) {
+              var node = __creEl(setElName),
+                CurrTopStart = ev.clientY,
+                currWidthStart = ev.clientX;
+
+              $(node).addClass(setElName + ' add-plate').attr('style', setElStyle).text(setElCont).css({
+                left: ev.clientX - contentBox.offset().left + 'px',
+                top: ev.clientY - contentBox.offset().top + 'px'
+              }).on('contextmenu', function (ev) {
+                _creContextMenuList(ev, [node]);
+                return false;
+              });
+
+              card.append(node);
+
+              $(this).on('mousemove', function (ev){
+                $(this).off('mousedown');
+                card.find(setElName).css({
+                  width: ev.clientX - currWidthStart + 'px',
+                  height: ev.clientY - CurrTopStart + 'px',
+                })
+              }).on('mouseup', function () {
+                $(this).off('mousedown').off('mousemove');
+              })
+              
+            })
+            topMsg('请在当前版块点击并拖动选择添加元素宽高');
+          },
+          btn2: function (index) {
+            layer.close(setLayer);
+          }
+        })
+
+        ContMenu().hide();
+      })
   
       $(contmenu).append(removeBtn);
-      !isLine && $(contmenu).append(setBtn);
+      $(contmenu).append(setBtn);
+      $(contmenu).append(addBtn);
+
+    } else if (isLine){
+      setName = card.attr('class').split(' ')[1];
+
+      $(contmenu).append(`<div class="layui-field-box">设置 <small>${setName}</small></div>`)
+
+      $(removeBtn).css({
+        width: '100%',
+      }).addClass('layui-btn').text('删除节点').on('click', function(){
+        nodes.forEach(function (node) {
+          $(node).remove();
+        })
+        isLine && contentBox.find('.card-num' + (cardNum-1)).remove();
+        _oldLines.pop();
+        topMsg('已删除');
+        ContMenu().hide();
+      });
+
+      $(contmenu).append(removeBtn);
+
     } else if (isExportsBox){
       $(nodes[1]).each(function (index, el) {
         $(el).on('contextmenu', function () {
@@ -254,6 +343,20 @@ layui.use(['element', 'layer', 'form'], function () {
           return false;
         })
       })
+    } else if (isCustom) {
+      cardBack = card.clone();
+      $(contmenu).append(`<div class="layui-field-box">设置 <small>${card.attr('class').split(' ')[0]}</small></div>`);
+      cardBack.css({
+        border: 'inherit'
+      });
+      cardBack.removeClass('add-plate');
+      var exportCont = `
+        <textarea cols="5" class="exports-code layui-textarea">${cardBack.prop('outerHTML')}</textarea>
+      `;
+
+      $(contmenu).append(exportCont);
+
+      $(contmenu).find('.exports-code').focus().select();
     } else {
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${card.attr('class')}</small></div>`);
     }
