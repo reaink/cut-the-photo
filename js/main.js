@@ -162,7 +162,18 @@ layui.use(['element', 'layer', 'form'], function () {
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${card.attr('class')}</small></div>`);
       $(contmenu).append(``)
     } else if (isCardMask || isLine) {
-      var setName = !isLine ? card.attr('class').split(' ')[4] : card.attr('class').split(' ')[1];
+      var setName = '';
+
+      //setName
+      if (!isLine) {
+        if (card.find('.card-name').get(0)) {
+          setName = card.find('.card-name').text();
+        } else {
+          setName = card.attr('class').split(' ')[4];
+        }
+      } else {
+        setName = card.attr('class').split(' ')[1];
+      }
 
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${setName}</small></div>`)
 
@@ -337,7 +348,6 @@ layui.use(['element', 'layer', 'form'], function () {
     $('#split-create').on('click', exportsCanvas)
     _Tip('#split-create', '输出选中遮罩面板到输出区');
 
-    $('#to-image').on('click', toImage)
     $('#down-image').on('click', downImage)
     $('#clear-exports').on('click', clearExports)
   }
@@ -345,10 +355,12 @@ layui.use(['element', 'layer', 'form'], function () {
   function initExportsBtn() {
     $('.set-img-format-box button').each(function (index, node) {
       $(node).on('click', function () {
+        if (!isHaveCanvas()) return;
         var format = $(this).attr('format');
         $('.img-format').text(format);
         format === 'jpg' && (format = 'jpeg');
         imgFormat = format;
+        toImage();
         console.log('setImg:', imgFormat);
       });
     })
@@ -679,8 +691,6 @@ layui.use(['element', 'layer', 'form'], function () {
 
   function toImage() {
     // sortCanvas();
-    if (isHaveCanvas() === 'notCanvas')return;
-
     var isFormatJpg = imgFormat === 'jpeg';
 
     if (isFormatJpg){
@@ -743,7 +753,9 @@ layui.use(['element', 'layer', 'form'], function () {
       layer.msg('没有转换canvas元素！', {
         time: 2000
       });
-      return 'notCanvas';
+      return false;
+    } else {
+      return true;
     }
   }
   function isHaveContCard() {
