@@ -12,6 +12,7 @@ layui.use(['element', 'layer', 'form'], function () {
   var contentBox = $('.main-content'),
     exportsBox = $('#exports-box'),
     _line = _createLineDom('#00dffc', true),
+    _canvas,
     contmenu = __creEl('div'),
     _oldLines = [],
     _scale = 1,
@@ -416,6 +417,7 @@ layui.use(['element', 'layer', 'form'], function () {
       $(node).css('margin-left', -left + 'px');
     } else {
       contentBox.css('margin-left', -left + 'px');
+      exportsBox.css('margin-left', -left + 'px');
     }
   }
 
@@ -576,16 +578,39 @@ layui.use(['element', 'layer', 'form'], function () {
     setExportBoxWidth();
     setFullScreenCenter(1, exportsBox);
     contentBox.find('.card-remove-btn').hide();
+    exportsBox.css('max-width', 'inherit');
     
     setTimeout(function () {
       let i = 0,
         allLength = splitCards.length+1,
         aClass,
-        setNameClass;
+        setNameClass,
+        scale = 2;
+
       for (let el of splitCards) {
-        html2canvas(el).then(function (canvas) {
+        var width = parseInt($(el).width()),
+          height = parseInt($(el).height()),
+          _canvas = __creEl('canvas');
+          
+        var opts = {
+          canvas: _canvas, //自定义 canvas
+          // logging: true, //日志开关，便于查看html2canvas的内部执行流程
+          width: width, //dom 原始宽度
+          height: height,
+          useCORS: true // 【重要】开启跨域配置
+        };
+
+        html2canvas(el, opts).then(function (canvas) {
+          var context = canvas.getContext('2d');
+          // 【重要】关闭抗锯齿
+          context.mozImageSmoothingEnabled = false;
+          context.webkitImageSmoothingEnabled = false;
+          context.msImageSmoothingEnabled = false;
+          context.imageSmoothingEnabled = false;
+
           aClass = $(el).attr('class').split(' ');
           setNameClass = $(el).find('.card-name').text();
+
           $(canvas).addClass(aClass[4]).addClass(setNameClass);
           exportsBox.append(canvas);
           i++;
@@ -694,8 +719,12 @@ layui.use(['element', 'layer', 'form'], function () {
   function canvasToImage(canvas) {
     var img = __creEl('img');
     var setClass = $(canvas).attr('class').split(' ')[1] ? $(canvas).attr('class').split(' ')[1] : $(canvas).attr('class').split(' ')[0];
+
     $(img).attr('src', canvas.toDataURL("image/" + imgFormat))
-    .addClass(setClass).addClass(imgFormat);
+    .addClass(setClass).addClass(imgFormat).css({
+      width: $(canvas).css('width'),
+      height: $(canvas).css('height')
+    });
     return img;
   }
   function downImage() {
