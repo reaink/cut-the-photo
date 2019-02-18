@@ -16,7 +16,8 @@ layui.use(['element', 'layer', 'form'], function () {
     _oldLines = [],
     _scale = 1,
     idNum = 1,
-    cardNum = 1;
+    cardNum = 1,
+    imgFormat = 'jpeg';
 
   function initElement() {
     //control
@@ -34,6 +35,7 @@ layui.use(['element', 'layer', 'form'], function () {
 
     //other
     setVersionView();
+    initExportsBtn();
   }
   function _createLineDom(bgcolor, isglobal, cardId) {
     var line = document.createElement('div'),
@@ -336,7 +338,19 @@ layui.use(['element', 'layer', 'form'], function () {
 
     $('#to-image').on('click', toImage)
     $('#down-image').on('click', downImage)
-    $('#clear-exports').on('click', clearExports)  
+    $('#clear-exports').on('click', clearExports)
+  }
+
+  function initExportsBtn() {
+    $('.set-img-format-box button').each(function (index, node) {
+      $(node).on('click', function () {
+        var format = $(this).attr('format');
+        $('.img-format').text(format);
+        format === 'jpg' && (format = 'jpeg');
+        imgFormat = format;
+        console.log('setImg:', imgFormat);
+      });
+    })
   }
 
   function initScaleControls(){
@@ -591,10 +605,7 @@ layui.use(['element', 'layer', 'form'], function () {
         })
       }
       
-    }, 100)
-
-    $('#down-image').text('转换图片');
-    
+    }, 100)    
   }
 
   function setOther(method) {
@@ -643,11 +654,24 @@ layui.use(['element', 'layer', 'form'], function () {
 
   function toImage() {
     // sortCanvas();
-    isHaveCanvas();
+    if (isHaveCanvas() === 'notCanvas')return;
 
-    $('#exports-box canvas').each(function (i, c) {
-      $(c).replaceWith(canvasToImage(c));
+    var isFormatJpg = imgFormat === 'jpeg';
+
+    if (isFormatJpg){
+      exportsBox.find('.png').remove();
+    } else {
+      exportsBox.find('.jpeg').remove();
+    }
+
+    exportsBox.find('canvas').each(function (i, c) {
+      exportsBox.append(canvasToImage(c));
+      $(c).hide();
     })
+
+    topMsg('已转换至' + imgFormat + '格式', {
+      time: 2000
+    });
   
   }
   function sortCanvas() {
@@ -669,8 +693,9 @@ layui.use(['element', 'layer', 'form'], function () {
   }
   function canvasToImage(canvas) {
     var img = __creEl('img');
-    $(img).attr('src', canvas.toDataURL("image/jpg"))
-    .addClass($(canvas).attr('class').split(' ')[1])
+    var setClass = $(canvas).attr('class').split(' ')[1] ? $(canvas).attr('class').split(' ')[1] : $(canvas).attr('class').split(' ')[0];
+    $(img).attr('src', canvas.toDataURL("image/" + imgFormat))
+    .addClass(setClass).addClass(imgFormat);
     return img;
   }
   function downImage() {
@@ -680,15 +705,9 @@ layui.use(['element', 'layer', 'form'], function () {
 
     var exportImgs = $('#exports-box img');
 
-    if (!exportImgs.get(0)) {
-      toImage();
-      $('#down-image').text('点击下载');
-    } else {
-      exportImgs.each(function (i, val) {
-        download($(val).attr('class'), $(val).attr('src'));
-      })
-    }
-    
+    exportImgs.each(function (i, val) {
+      download($(val).attr('class').split(' ')[0], $(val).attr('src'));
+    })
   }
   function isHaveCanvas() {
     if (!exportsBox.html()) {

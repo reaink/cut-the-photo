@@ -54,7 +54,15 @@
         <button id="clear-exports" class="layui-btn">清空输出</button>
       </div>
       <div class="layui-col-xs6 text-right">
-        <button id="down-image" class="layui-btn">转换图片</button>
+        <span>输出图片格式：.<span class="img-format">jpg</span></span>
+        <div class="layui-btn-group set-img-format-box">
+          <button class="layui-btn" format="jpg">jpg</button>
+          <button class="layui-btn" format="png">png</button>
+        </div>
+        <div class="layui-btn-group">
+          <button id="to-image" class="layui-btn">转换图片</button>
+          <button id="down-image" class="layui-btn">下载图片</button>
+        </div>
       </div>
     </div>
     <h3><span>Exports Content</span></h3>
