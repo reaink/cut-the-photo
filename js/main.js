@@ -6,7 +6,7 @@ layui.use(['element', 'layer', 'form'], function () {
   var $ = layui.$,
     layer = layui.layer,
     form = layui.form,
-    version = 'beta 1.4.3';
+    version = 'beta 1.4.5';
 
 
   var contentBox = $('.main-content'),
@@ -168,8 +168,9 @@ layui.use(['element', 'layer', 'form'], function () {
       }).addClass('layui-btn').text('删除节点').on('click', function(){
         nodes.forEach(function (node) {
           $(node).remove();
-          isLine && contentBox.find('.card-num' + (cardNum-1)).remove();
         })
+        isLine && contentBox.find('.card-num' + (cardNum-1)).remove();
+        _oldLines.pop();
         topMsg('已删除');
         ContMenu().hide();
       });
@@ -464,7 +465,9 @@ layui.use(['element', 'layer', 'form'], function () {
 
   function addLine(ev) {
     ev = ev || event;
-
+    
+    console.log(parseInt($(_line).css('top')), parseInt($(_oldLines[_oldLines.length - 1]).css('top')));
+    
     if (_oldLines && parseInt($(_line).css('top')) > parseInt($(_oldLines[_oldLines.length - 1]).css('top'))) {
       var _oDiv = _creMask(),
         removeBtn = document.createElement('div'),
