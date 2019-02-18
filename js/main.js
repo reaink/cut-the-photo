@@ -168,6 +168,7 @@ layui.use(['element', 'layer', 'form'], function () {
       }).addClass('layui-btn').text('删除节点').on('click', function(){
         nodes.forEach(function (node) {
           $(node).remove();
+          isLine && contentBox.find('.card-num' + (cardNum-1)).remove();
         })
         topMsg('已删除');
         ContMenu().hide();
