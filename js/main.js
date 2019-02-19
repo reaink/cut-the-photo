@@ -20,27 +20,577 @@ layui.use(['element', 'layer', 'form'], function () {
     cardNum = 1,
     imgFormat = 'jpeg';
 
+  //初始化元素
   function initElement() {
-    //control
-    initControlBtnsEvent();
+    //internal
     initInternal();
 
     //view
     initContentBox();
     initSetFullCenter();
-    initStartEndBtn();
-    initScaleControls();
     ContMenu();
-    initToolsBtn();
     setExportBoxWidth();
 
-    //other
-    setVersionView();
+    //control
+    initControlBtnsEvent();
+  }
+  //控制按钮群
+  function initControlBtnsEvent() {
+    initToolsBtn();
+    initStartEndBtn();
+    // initScaleControls();
     initExportsBtn();
+    $('#upload-img').on('change', uploadImg);
+
+    $('#clear-other').on('click', setOther);
+    $('#clear-all').on('click', clearAll);
+    $('#split-create').on('click', exportsCanvas)
+
+    $('#down-image').on('click', downImage)
+    $('#clear-exports').on('click', clearExports)
+  }
+  //初始内部数据
+  function initInternal() {
+    setVersionView();
+  }
+  function setVersionView() {
+    $('.version').text(version);
+  }
+  //init
+  function initContentBox() {
+    contentBox.on('mouseenter', function () {
+      $(contentBox).append(_line);
+    });
+    contentBox.on('mouseleave', function () {
+      $(_line).remove();
+    });
+
+    contentBox.on('contextmenu',function(ev){
+      _creContextMenuList(ev, [contentBox]);
+      return false;
+    }).on('mousemove', contMove).on('click', addLine)
+  }
+  function initStartEndBtn(ev) {
+    var startBtn = _creAddLineBtn('layui-icon-left', '添加顶部分隔线'),
+      endBtn = _creAddLineBtn('layui-icon-left', '添加底部分隔线');
+    
+    $(startBtn).css('top', '-16px').on('mousemove', function() {
+      contMove(ev, '0');
+      return false;
+    })
+    $(endBtn).css('bottom', '-16px').on('mousemove', function() {
+      contMove(ev, parseInt(contentBox.height()));
+      return false;
+    })
+
+    contentBox.append(startBtn);
+    contentBox.append(endBtn);
+    
+  }
+  function initSetFullCenter() {
+    setFullScreenCenter();
+    $(window).on('resize', setFullScreenCenter);   
+  }
+  function initToolsBtn(ev) {
+    var addLineBtns = $('.top2-tools-box .addline'),
+      toToolsBox2Btn = $('.top2-tools-box .to-tools-box2'),
+      toolsBox2 = $('.tools-box2');
+    
+    addLineBtns.each(function (index, node) {
+      $(node).on('click', function (){
+        contMove(ev, $(this).attr('data-px'));
+        addLine();
+      }).on('mouseenter', function (){
+        if ($(this).attr('data-name') === 'end-btn'){
+          $(this).attr('data-px', contentBox.height()).attr('title', contentBox.height());
+        }
+      })
+    })
+
+    toToolsBox2Btn.on('click', function () {
+      $('body,html').scrollTop($(toolsBox2).offset().top);
+    })
+    
+
+  }
+  function initExportsBtn() {
+    $('.set-img-format-box button').each(function (index, node) {
+      $(node).on('click', function () {
+        if (!isHaveCanvas()) return;
+        var format = $(this).attr('format');
+        $('.img-format').text(format);
+        format === 'jpg' && (format = 'jpeg');
+        imgFormat = format;
+        toImage();
+        console.log('setImg:', imgFormat);
+      });
+    })
+  }
+  /* function initScaleControls(){
+    var subBtn = $('#scale-sub'),
+      plusBtn =$('#scale-plus'),
+      initBtn = $('#scale-init');
+
+    initStyle = {
+      width: contentBox.css('width'),
+      height: contentBox.css('height'),
+      margin: contentBox.css('margin')
+    }
+    
+    subBtn.on('click', function (){
+      setFullScreenCenter();
+      $('body').css({
+        zoom: (_scale -= 0.25)
+      });
+    })
+    plusBtn.on('click', function (){
+      setFullScreenCenter();
+      $('body').css({
+        zoom: (_scale += 0.25)
+      });
+    })
+    initBtn.on('click', function (){
+      setFullScreenCenter();
+      $('body').css({
+        zoom: 1
+      });
+      _scale = 1;
+    })
+  } */
+  function ContMenu(){
+    $(window).on('scroll', function (){
+      $(contmenu).hide();
+    })
+    $(document).on('click', function (){
+        $(contmenu).hide();
+    })
+    $(contmenu).css({
+      display: 'none',
+      position: 'fixed',
+      width: 200 + 'px',
+      background: '#eee',
+      border: 'solid 1px #aaa',
+      zIndex: 999999
+    }).on('mousemove', function () {
+      return false;
+    }).on('click', function () {
+      return false;
+    }).attr('class', 'contextMenu');
+
+    $('body').append(contmenu);
+
+    return $(contmenu);
+  }
+
+  function setFullScreenCenter(ev, node) {
+    var clientWidth = document.documentElement.clientWidth;
+    var left = parseInt((parseInt(parseInt(contentBox.css('width')) * _scale) - clientWidth) / 2);
+    if (node) {
+      $(node).css('margin-left', -left + 'px');
+    } else {
+      contentBox.css('margin-left', -left + 'px');
+      exportsBox.css('margin-left', -left + 'px');
+    }
+  }
+
+  function uploadImg() {
+    var file = $(this).get(0).files[0],
+      contentbox = contentBox,
+      imageType = /images*/;
+    
+    if (!file.type.match(imageType)) {
+      topMsg('请选择一张图片！');
+      return;
+    } else {
+      var reader = new FileReader();
+
+      reader.onload = function () {
+        var img = new Image();
+        img.src = reader.result;
+
+        setTimeout(function () {
+          $(img).width = img.width + 'px';
+          $(img).height = img.height + 'px';
+
+          exportsBox.css('width', img.width + 'px');
+          contentbox.css({
+            width: img.width + 'px',
+            height: img.height + 'px',
+            'background-image': 'url(' + reader.result + ')',
+            'background-repeat': 'no-repeat',
+            'background-size': 'contain',
+            'background-position': 'top center',
+            'box-shadow': '0 0 5px #999'
+          })
+          
+          clearAll();
+          setFullScreenCenter();
+          console.log('IMG width:', img.width, ', height:', img.height);
+        })
+      };
+
+
+      reader.readAsDataURL(file);
+    }
+    
+  }
+
+  function contMove(ev, clientY) {
+    ev = ev || event;
+    
+    if (clientY) {
+      $(_line).css({
+        top: clientY + 'px'
+      })
+    } else {
+      $(_line).css({
+        top: (ev.clientY - contentBox.offset().top + $(window).scrollTop()) * _scale + 'px'
+      })
+    }
+  }
+
+  function addLine(ev) {
+    ev = ev || event;
+    
+    if (_oldLines && parseInt($(_line).css('top')) > parseInt($(_oldLines[_oldLines.length - 1]).css('top'))) {
+      var _oDiv = _creMask(),
+        removeBtn = __creEl('div'),
+        line = _createLineDom('#00f', false, _oDiv),
+        isOut;
+
+      $(removeBtn).addClass('remove-btn card-remove-btn');
+      $(_oDiv).addClass('card-mask card-' + (idNum++) + ' card-num' + cardNum++);
+
+      console.log('add line of top:', $(_line).css('top'), 'cardNum: ', cardNum);
+
+      $(removeBtn).css({
+        display: 'none',
+        'font-size': 30 + 'px',
+        color: '#0af',
+        position: 'absolute',
+        cursor: 'pointer'
+      }).addClass('layui-icon layui-icon-close').on('mouseenter', function () {
+        clearTimeout(isOut);
+        return false;
+      }).on('mousemove', function () {
+        return false;
+      }).on('mouseleave', function () {
+        isOut = setTimeout(function () {
+          $(removeBtn).hide();
+        }, 500)
+      }).attr('title', `删除idNum：${idNum}面板`);
+
+      contentBox.append(removeBtn);
+
+      $(_oDiv).css({
+        position: 'absolute',
+        top: parseInt($(_oldLines[_oldLines.length - 1]).css('top')) + 'px',
+        height: parseInt($(_line).css('top')) - parseInt($(_oldLines[_oldLines.length - 1]).css('top')) + 'px',
+        'background-image': contentBox.css('background-image'),
+        'background-position': 0 + ' ' + -parseInt($(_oldLines[_oldLines.length - 1]).css('top')) + 'px',
+        'background-repeat': 'no-repeat',
+        'background-size': 'cover',
+        filter: 'brightness(.8)'
+      }).on('mousemove', function (){
+        return false;
+      }).on('click', function (){
+        $(contmenu).is(':visible') && $(contmenu).hide();
+        return false;
+      }).on('mouseenter', function (ev) {
+        $(_line).hide();
+        $(removeBtn).css({
+          top: parseInt($(_oDiv).css('top')) + (parseInt($(_oDiv).height()) / 2) - (parseInt($(removeBtn).height()) / 2) + 'px',
+          right: '-' + $(removeBtn).css('width'),
+          display: 'inline-block'
+        })
+        clearTimeout(isOut);
+      }).on('mouseleave', function () {
+        $(_line).show();
+        isOut = setTimeout(function () {
+          $(removeBtn).hide();
+        }, 500)
+      }).on('contextmenu', function (ev) {
+        _creContextMenuList(ev, [_oDiv, removeBtn]);
+        return false;
+      });
+      $(removeBtn).on('click', function (){
+        var tmpId = $(_oDiv).attr('class').split(' ')[3];
+        $('.' + tmpId).remove();
+        $(removeBtn).remove();
+        
+        return false;
+      })
+
+      contentBox.append(_oDiv);
+    } else {
+      var line = _createLineDom('#00f');
+      console.log('add line of top:', $(_line).css('top'));
+    }
+
+    $(line).css({
+      top: $(_line).css('top')
+    })
+
+    contentBox.append(line);
+    _oldLines.push(line);
+  }
+
+  function exportsCanvas() {
+    var splitCards = contentBox.find('.split-card');
+
+    if (!isHaveContCard()) return;
+    if (!isDetectZoom()) return;
+
+    var loading = layer.load(1, {shade: 0.5});
+    setOther('hide');
+    setExportBoxWidth();
+    setFullScreenCenter(1, exportsBox);
+    contentBox.find('.card-remove-btn').hide();
+    exportsBox.css('max-width', 'inherit');
+    
+    topMsg('请稍等……');
+
+    setTimeout(function () {
+      let i = 0,
+        allLength = splitCards.length+1,
+        aClass,
+        setNameClass,
+        scale = 2;
+
+      splitCards.each(function (index, el) {
+        var width = parseInt($(el).width()),
+          height = parseInt($(el).height()),
+          _canvas = __creEl('canvas');
+          
+        var opts = {
+          canvas: _canvas,
+          // logging: true, // 日志开关，便于查看html2canvas的内部执行流程
+          width: width,
+          height: height,
+          useCORS: true // 开启跨域配置
+        };
+
+        html2canvas(el, opts).then(function (canvas) {
+          var context = canvas.getContext('2d');
+          context.mozImageSmoothingEnabled = false;
+          context.webkitImageSmoothingEnabled = false;
+          context.msImageSmoothingEnabled = false;
+          context.imageSmoothingEnabled = false;
+
+          aClass = $(el).attr('class').split(' ');
+          setNameClass = $(el).find('.card-name').text();
+
+          $(canvas).addClass(aClass[4]).addClass(setNameClass);
+          exportsBox.append(canvas);
+          i++;
+          topMsg(`共：${allLength}个，第${i}个`);
+          if (i === splitCards.length) {
+            layer.close(loading);
+            topMsg('输出完成');
+            setOther('show');
+            setExportsCanvasContextMenu();
+            _creContextMenuList(1, [exportsBox, exportsBox.find('canvas')]);
+            ContMenu().hide();
+          }
+        })
+      })
+      
+    }, 100)    
+  }
+
+  function setOther(method) {
+    method = method || 'remove';
+
+    if (method === 'remove') {
+      contentBox.find('.line,.remove-btn,.card-name').remove();
+      topMsg();
+    } else if (method === 'hide') {
+      contentBox.find('.line,.remove-btn,.card-name').hide();
+      contentBox.find('').hide();
+      contentBox.find('').hide();
+      topMsg('已隐藏');
+    } else if (method === 'show') {
+      contentBox.find('.line,.card-name').show();
+    }
+
+  }
+  function setExportBoxWidth() {
+    exportsBox.css('width', contentBox.css('width'));
+  }
+  function setExportsCanvasContextMenu() {
+    var canvas = exportsBox.find('canvas');
+
+    canvas.on('contextmenu', function (ev) {
+      _creContextMenuList(ev, [exportsBox, canvas]);
+      return false;
+    })
+  }
+
+  function topMsg(msg, time, offset_) {
+    msg = msg || '已清除';
+    layer.msg(msg, {
+      time: time || 2000,
+      offset: offset_ || 't'
+    })
+  }
+
+  function clearAll() {
+    setOther('remove');
+    contentBox.find('.mask').remove();
+    contentBox.find('.card-remove-btn').remove();
+
+    topMsg();
+  }
+
+  function toImage() {
+    // sortCanvas();
+    var isFormatJpg = imgFormat === 'jpeg';
+
+    if (isFormatJpg){
+      exportsBox.find('.png').remove();
+    } else {
+      exportsBox.find('.jpeg').remove();
+    }
+
+    exportsBox.find('canvas').each(function (i, c) {
+      exportsBox.append(canvasToImage(c));
+      $(c).hide();
+    })
+
+    topMsg('已转换至' + imgFormat + '格式', {
+      time: 2000
+    });
+  
+  }
+  function sortCanvas() {
+    var nNum, oNum, cloneNode;
+    $('#exports-box canvas').each(function (i, c) {
+      nNum = $(c).attr('class').substr($(c).attr('class').length - 1);
+      if (nNum < oNum) {
+        cloneNode = $(c).clone(true);
+        exportsBox.append(cloneNode);
+        $(c).remove();
+      }
+      console.log(nNum, oNum, nNum < oNum);
+      
+      oNum = nNum;
+    })
+    $('#exports-box canvas').each(function (i, c) {
+      console.log($(c).attr('class'));
+    })
+  }
+  function canvasToImage(canvas) {
+    var img = __creEl('img');
+    var setClass = $(canvas).attr('class').split(' ')[1] ? $(canvas).attr('class').split(' ')[1] : $(canvas).attr('class').split(' ')[0];
+
+    $(img).attr('src', canvas.toDataURL("image/" + imgFormat))
+    .addClass(setClass).addClass(imgFormat).css({
+      width: $(canvas).css('width'),
+      height: $(canvas).css('height')
+    });
+    return img;
+  }
+  function downImage() {
+    contentBox.find('.line').remove();
+    contentBox.find('.removeBtn').remove();
+    if (isHaveCanvas() === 'notCanvas')return;
+
+    var exportImgs = $('#exports-box img'),
+      i = 0,
+      img;
+    
+    var timer = setInterval(function () {
+      if (i !== exportImgs.length) {
+        img = $(exportImgs).get(i - 1);        
+        download($(img).attr('class').split(' ')[0], $(img).attr('src'));
+        topMsg(`下载第${i}张，共${exportImgs.length}张`);
+        i++;
+      } else {
+        topMsg(`下载共${exportImgs.length}张`, 3000);
+        clearInterval(timer);
+      }
+    }, 200);
+  }
+  function isHaveCanvas() {
+    if (!exportsBox.html()) {
+      topMsg('没有转换canvas元素！');
+      return false;
+    } else {
+      return true;
+    }
+  }
+  function isHaveContCard() {
+    if (!contentBox.find('.card-mask').get(0)) {
+      topMsg('没有card-mask层！');
+      return false;
+    } else {
+      return true;
+    }
+  }
+  function clearExports() {
+    exportsBox.html('');
+  }
+  function download(name, data) {
+    downloadFile(name, data);
+  }
+  function downloadFile(fileName, content) {
+    let aLink = __creEl('a');
+    let blob = base64ToBlob(content); //new Blob([content]);
+
+    let evt = document.createEvent("HTMLEvents");
+    evt.initEvent("click", true, true);//initEvent 不加后两个参数在FF下会报错  事件类型，是否冒泡，是否阻止浏览器的默认行为
+    aLink.download = fileName;
+    aLink.href = URL.createObjectURL(blob);
+
+    aLink.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true, view: window}));//兼容火狐
+  }
+  function base64ToBlob(code) {
+    let parts = code.split(';base64,');
+    let contentType = parts[0].split(':')[1];
+    let raw = window.atob(parts[1]);
+    let rawLength = raw.length;
+
+    let uInt8Array = new Uint8Array(rawLength);
+
+    for (let i = 0; i < rawLength; ++i) {
+      uInt8Array[i] = raw.charCodeAt(i);
+    }
+    return new Blob([uInt8Array], {type: contentType});
+  }
+  function detectZoom (){
+    var ratio = 0,
+      screen = window.screen,
+      ua = navigator.userAgent.toLowerCase();
+   
+     if (window.devicePixelRatio !== undefined) {
+        ratio = window.devicePixelRatio;
+    }
+    else if (~ua.indexOf('msie')) {  
+      if (screen.deviceXDPI && screen.logicalXDPI) {
+        ratio = screen.deviceXDPI / screen.logicalXDPI;
+      }
+    }
+    else if (window.outerWidth !== undefined && window.innerWidth !== undefined) {
+      ratio = window.outerWidth / window.innerWidth;
+    }
+     
+     if (ratio){
+      ratio = Math.round(ratio * 100);
+    }
+     
+     return ratio;
+  }
+  function isDetectZoom() {
+    var isZoom = detectZoom() === 100;
+    
+    if (!isZoom) {
+      topMsg('当前缩放比例不是100%');
+    }
+    return isZoom;
   }
   function _createLineDom(bgcolor, isglobal, cardId) {
-    var line = document.createElement('div'),
-      removeBtn = document.createElement('i'),
+    var line = __creEl('div'),
+      removeBtn = __creEl('i'),
       timer;
 
     bgcolor = bgcolor || '#00dffc',
@@ -120,33 +670,6 @@ layui.use(['element', 'layer', 'form'], function () {
     }
     return line;
   }
-  function _creAddLineBtn(fontIcon, tipMsg, tips) {
-    var addLineBtn = document.createElement('div');
-
-    $(addLineBtn).css({
-      position: 'absolute',
-      right: '-30px',
-      cursor: 'pointer',
-      color: '#ccc',
-      'font-size': 30 + 'px'
-    }).addClass(`layui-icon ${fontIcon}`);
-
-    _Tip(addLineBtn, tipMsg, tips);
-
-    return addLineBtn;
-  }
-  function _creMask() {
-    var oDiv = document.createElement('div');
-
-    $(oDiv).css({
-      display: 'inline-block',
-      width: '100%',
-      background: 'rgba(0,0,0,.8)'
-    }).addClass('split-card mask');
-
-    return oDiv;
-  }
-
   function _creContextMenuList(ev, nodes) {
     var removeBtn = __creEl('button'),
       setBtn = __creEl('button'),
@@ -367,568 +890,32 @@ layui.use(['element', 'layer', 'form'], function () {
       left: ev.clientX + 'px'
     })
   }
+  function _creAddLineBtn(fontIcon, title) {
+    var addLineBtn = __creEl('div');
+
+    $(addLineBtn).css({
+      position: 'absolute',
+      right: '-30px',
+      cursor: 'pointer',
+      color: '#ccc',
+      'font-size': 30 + 'px'
+    }).addClass(`layui-icon ${fontIcon}`).attr('title', title);
+
+    return addLineBtn;
+  }
+  function _creMask() {
+    var oDiv = __creEl('div');
+
+    $(oDiv).css({
+      display: 'inline-block',
+      width: '100%',
+      background: 'rgba(0,0,0,.8)'
+    }).addClass('split-card mask');
+
+    return oDiv;
+  }
   function __creEl(name) {
     return document.createElement(name);
-  }
-  function _Tip(el, msg, tips) {
-    var Tip;
-
-    tips = tips || 3;
-
-    $(el).on('mouseenter', function () {
-      Tip = setTimeout(function () {
-        layer.tips(msg, el, {
-          tips: tips
-        });
-      }, 1000);
-    }).on('mouseleave', function () {
-      clearTimeout(Tip);
-    })
-  }
-  function setVersionView() {
-    $('.version').text(version);
-  }
-
-  function initInternal() {
-  }
-  function initContentBox() {
-    contentBox.on('mouseenter', function () {
-      $(contentBox).append(_line);
-    });
-    contentBox.on('mouseleave', function () {
-      $(_line).remove();
-    });
-
-    contentBox.on('contextmenu',function(ev){
-      _creContextMenuList(ev, [contentBox]);
-      return false;
-    }).on('mousemove', contMove).on('click', addLine)
-  }
-  function initStartEndBtn(ev) {
-    var startBtn = _creAddLineBtn('layui-icon-left', '添加顶部分隔线', 2),
-      endBtn = _creAddLineBtn('layui-icon-left', '添加底部分隔线', 2);
-    
-    $(startBtn).css('top', '-16px').on('mousemove', function() {
-      contMove(ev, '0');
-      return false;
-    })
-    $(endBtn).css('bottom', '-16px').on('mousemove', function() {
-      contMove(ev, parseInt(contentBox.height()));
-      return false;
-    })
-
-    contentBox.append(startBtn);
-    contentBox.append(endBtn);
-    
-  }
-  function initSetFullCenter() {
-    setFullScreenCenter();
-    $(window).on('resize', setFullScreenCenter);   
-  }
-  function initToolsBtn(ev) {
-    var oBtns = $('.top2-ools-box .addline');
-    
-    oBtns.each(function (index, node) {
-      $(node).on('click', function (){
-        contMove(ev, $(this).attr('data-px'));
-        addLine();
-      }).on('mouseenter', function (){
-        if ($(this).attr('data-name') === 'end-btn'){
-          $(this).attr('data-px', contentBox.height()).attr('title', contentBox.height());
-        }
-      })
-    })    
-  }
-  function initControlBtnsEvent() {
-    $('#upload-img').on('change', uploadImg);
-
-    $('#clear-other').on('click', setOther);
-    _Tip('#clear-other', '清除内容面板中：分割线与删除按钮');
-
-    $('#clear-all').on('click', clearAll);
-    _Tip('#clear-all', '清除内容面板中：分割线、删除按钮、遮罩面板');
-
-    $('#split-create').on('click', exportsCanvas)
-    _Tip('#split-create', '输出选中遮罩面板到输出区');
-
-    $('#down-image').on('click', downImage)
-    $('#clear-exports').on('click', clearExports)
-  }
-
-  function initExportsBtn() {
-    $('.set-img-format-box button').each(function (index, node) {
-      $(node).on('click', function () {
-        if (!isHaveCanvas()) return;
-        var format = $(this).attr('format');
-        $('.img-format').text(format);
-        format === 'jpg' && (format = 'jpeg');
-        imgFormat = format;
-        toImage();
-        console.log('setImg:', imgFormat);
-      });
-    })
-  }
-
-  function initScaleControls(){
-    var subBtn = $('#scale-sub'),
-      plusBtn =$('#scale-plus'),
-      initBtn = $('#scale-init');
-
-    initStyle = {
-      width: contentBox.css('width'),
-      height: contentBox.css('height'),
-      margin: contentBox.css('margin')
-    }
-    
-    subBtn.on('click', function (){
-      setFullScreenCenter();
-      $('body').css({
-        zoom: (_scale -= 0.25)
-      });
-    })
-    plusBtn.on('click', function (){
-      setFullScreenCenter();
-      $('body').css({
-        zoom: (_scale += 0.25)
-      });
-    })
-    initBtn.on('click', function (){
-      setFullScreenCenter();
-      $('body').css({
-        zoom: 1
-      });
-      _scale = 1;
-    })
-  }
-  function ContMenu(){
-    $(window).on('scroll', function (){
-      $(contmenu).hide();
-    })
-    $(document).on('click', function (){
-        $(contmenu).hide();
-    })
-    $(contmenu).css({
-      display: 'none',
-      position: 'fixed',
-      width: 200 + 'px',
-      background: '#eee',
-      border: 'solid 1px #aaa',
-      zIndex: 999999
-    }).on('mousemove', function () {
-      return false;
-    }).on('click', function () {
-      return false;
-    }).attr('class', 'contextMenu');
-
-    $('body').append(contmenu);
-
-    return $(contmenu);
-  }
-
-  function setFullScreenCenter(ev, node) {
-    var clientWidth = document.documentElement.clientWidth;
-    var left = parseInt((parseInt(parseInt(contentBox.css('width')) * _scale) - clientWidth) / 2);
-    if (node) {
-      $(node).css('margin-left', -left + 'px');
-    } else {
-      contentBox.css('margin-left', -left + 'px');
-      exportsBox.css('margin-left', -left + 'px');
-    }
-  }
-
-  function uploadImg() {
-    var file = $(this).get(0).files[0],
-      contentbox = contentBox,
-      imageType = /images*/;
-    
-    if (!file.type.match(imageType)) {
-      layer.msg('请选择一张图片！', {
-        time: 2000
-      });
-      return;
-    } else {
-      var reader = new FileReader();
-
-      reader.onload = function () {
-        var img = new Image();
-        img.src = reader.result;
-
-        setTimeout(function () {
-          $(img).width = img.width + 'px';
-          $(img).height = img.height + 'px';
-
-          exportsBox.css('width', img.width + 'px');
-          contentbox.css({
-            width: img.width + 'px',
-            height: img.height + 'px',
-            'background-image': 'url(' + reader.result + ')',
-            'background-repeat': 'no-repeat',
-            'background-size': 'contain',
-            'background-position': 'top center',
-            'box-shadow': '0 0 5px #999'
-          })
-          
-          clearAll();
-          setFullScreenCenter();
-          console.log('IMG width:', img.width, ', height:', img.height);
-        })
-      };
-
-
-      reader.readAsDataURL(file);
-    }
-    
-  }
-
-  function contMove(ev, clientY) {
-    ev = ev || event;
-    
-    if (clientY) {
-      $(_line).css({
-        top: clientY + 'px'
-      })
-    } else {
-      $(_line).css({
-        top: (ev.clientY - contentBox.offset().top + $(window).scrollTop()) * _scale + 'px'
-      })
-    }
-  }
-
-  function addLine(ev) {
-    ev = ev || event;
-    
-    if (_oldLines && parseInt($(_line).css('top')) > parseInt($(_oldLines[_oldLines.length - 1]).css('top'))) {
-      var _oDiv = _creMask(),
-        removeBtn = document.createElement('div'),
-        line = _createLineDom('#00f', false, _oDiv),
-        isOut;
-
-      $(removeBtn).addClass('remove-btn card-remove-btn');
-      $(_oDiv).addClass('card-mask card-' + (idNum++) + ' card-num' + cardNum++);
-
-      console.log('add line of top:', $(_line).css('top'), 'cardNum: ', cardNum);
-
-      $(removeBtn).css({
-        display: 'none',
-        'font-size': 30 + 'px',
-        color: '#0af',
-        position: 'absolute',
-        cursor: 'pointer'
-      }).addClass('layui-icon layui-icon-close').on('mouseenter', function () {
-        clearTimeout(isOut);
-        return false;
-      }).on('mousemove', function () {
-        return false;
-      }).on('mouseleave', function () {
-        isOut = setTimeout(function () {
-          $(removeBtn).hide();
-        }, 500)
-      }).attr('title', `删除idNum：${idNum}面板`);
-
-      contentBox.append(removeBtn);
-
-      $(_oDiv).css({
-        position: 'absolute',
-        top: parseInt($(_oldLines[_oldLines.length - 1]).css('top')) - 1 + 'px',
-        height: parseInt($(_line).css('top')) - parseInt($(_oldLines[_oldLines.length - 1]).css('top')) + 'px',
-        'background-image': contentBox.css('background-image'),
-        'background-position': 0 + ' ' + -parseInt($(_oldLines[_oldLines.length - 1]).css('top')) + 'px',
-        'background-repeat': 'no-repeat',
-        'background-size': 'cover',
-        filter: 'brightness(.8)'
-      }).on('mousemove', function (){
-        return false;
-      }).on('click', function (){
-        $(contmenu).is(':visible') && $(contmenu).hide();
-        return false;
-      }).on('mouseenter', function (ev) {
-        $(_line).hide();
-        $(removeBtn).css({
-          top: parseInt($(_oDiv).css('top')) + (parseInt($(_oDiv).height()) / 2) - (parseInt($(removeBtn).height()) / 2) + 'px',
-          right: '-' + $(removeBtn).css('width'),
-          display: 'inline-block'
-        })
-        clearTimeout(isOut);
-      }).on('mouseleave', function () {
-        $(_line).show();
-        isOut = setTimeout(function () {
-          $(removeBtn).hide();
-        }, 500)
-      }).on('contextmenu', function (ev) {
-        _creContextMenuList(ev, [_oDiv, removeBtn]);
-        return false;
-      });
-      $(removeBtn).on('click', function (){
-        var tmpId = $(_oDiv).attr('class').split(' ')[3];
-        $('.' + tmpId).remove();
-        $(removeBtn).remove();
-        
-        return false;
-      })
-
-      contentBox.append(_oDiv);
-    } else {
-      var line = _createLineDom('#00f');
-      console.log('add line of top:', $(_line).css('top'));
-    }
-
-    $(line).css({
-      top: $(_line).css('top')
-    })
-
-    contentBox.append(line);
-    _oldLines.push(line);
-  }
-
-  function exportsCanvas() {
-    var splitCards = contentBox.find('.split-card');
-
-    if (!isHaveContCard()) return;
-    if (!isDetectZoom()) return;
-
-    var loading = layer.load(1, {shade: 0.5});
-    setOther('hide');
-    setExportBoxWidth();
-    setFullScreenCenter(1, exportsBox);
-    contentBox.find('.card-remove-btn').hide();
-    exportsBox.css('max-width', 'inherit');
-    
-    setTimeout(function () {
-      let i = 0,
-        allLength = splitCards.length+1,
-        aClass,
-        setNameClass,
-        scale = 2;
-
-      for (let el of splitCards) {
-        var width = parseInt($(el).width()),
-          height = parseInt($(el).height()),
-          _canvas = __creEl('canvas');
-          
-        var opts = {
-          canvas: _canvas, //自定义 canvas
-          // logging: true, //日志开关，便于查看html2canvas的内部执行流程
-          width: width, //dom 原始宽度
-          height: height,
-          useCORS: true // 【重要】开启跨域配置
-        };
-
-        html2canvas(el, opts).then(function (canvas) {
-          var context = canvas.getContext('2d');
-          // 【重要】关闭抗锯齿
-          context.mozImageSmoothingEnabled = false;
-          context.webkitImageSmoothingEnabled = false;
-          context.msImageSmoothingEnabled = false;
-          context.imageSmoothingEnabled = false;
-
-          aClass = $(el).attr('class').split(' ');
-          setNameClass = $(el).find('.card-name').text();
-
-          $(canvas).addClass(aClass[4]).addClass(setNameClass);
-          exportsBox.append(canvas);
-          i++;
-          layer.msg(`共：${allLength}个，第${i}个`, {
-            offset: 't'
-          });
-          if (i === splitCards.length) {
-            layer.close(loading);
-            layer.msg('输出完成', {
-              time: 2000
-            });
-            setOther('show');
-            setExportsCanvasContextMenu();
-            _creContextMenuList(1, [exportsBox, exportsBox.find('canvas')]);
-            ContMenu().hide();
-          }
-        })
-      }
-      
-    }, 100)    
-  }
-
-  function setOther(method) {
-    method = method || 'remove';
-
-    if (method === 'remove') {
-      contentBox.find('.line,.remove-btn,.card-name').remove();
-      topMsg();
-    } else if (method === 'hide') {
-      contentBox.find('.line,.remove-btn,.card-name').hide();
-      contentBox.find('').hide();
-      contentBox.find('').hide();
-      topMsg('已隐藏');
-    } else if (method === 'show') {
-      contentBox.find('.line,.card-name').show();
-    }
-
-  }
-  function setExportBoxWidth() {
-    exportsBox.css('width', contentBox.css('width'));
-  }
-  function setExportsCanvasContextMenu() {
-    var canvas = exportsBox.find('canvas');
-
-    canvas.on('contextmenu', function (ev) {
-      _creContextMenuList(ev, [exportsBox, canvas]);
-      return false;
-    })
-  }
-
-  function topMsg(msg) {
-    msg = msg || '已清除';
-    layer.msg(msg, {
-      time: 2000,
-      offset: 't'
-    })
-  }
-
-  function clearAll() {
-    setOther('remove');
-    contentBox.find('.mask').remove();
-    contentBox.find('.card-remove-btn').remove();
-
-    topMsg();
-  }
-
-  function toImage() {
-    // sortCanvas();
-    var isFormatJpg = imgFormat === 'jpeg';
-
-    if (isFormatJpg){
-      exportsBox.find('.png').remove();
-    } else {
-      exportsBox.find('.jpeg').remove();
-    }
-
-    exportsBox.find('canvas').each(function (i, c) {
-      exportsBox.append(canvasToImage(c));
-      $(c).hide();
-    })
-
-    topMsg('已转换至' + imgFormat + '格式', {
-      time: 2000
-    });
-  
-  }
-  function sortCanvas() {
-    var nNum, oNum, cloneNode;
-    $('#exports-box canvas').each(function (i, c) {
-      nNum = $(c).attr('class').substr($(c).attr('class').length - 1);
-      if (nNum < oNum) {
-        cloneNode = $(c).clone(true);
-        exportsBox.append(cloneNode);
-        $(c).remove();
-      }
-      console.log(nNum, oNum, nNum < oNum);
-      
-      oNum = nNum;
-    })
-    $('#exports-box canvas').each(function (i, c) {
-      console.log($(c).attr('class'));
-    })
-  }
-  function canvasToImage(canvas) {
-    var img = __creEl('img');
-    var setClass = $(canvas).attr('class').split(' ')[1] ? $(canvas).attr('class').split(' ')[1] : $(canvas).attr('class').split(' ')[0];
-
-    $(img).attr('src', canvas.toDataURL("image/" + imgFormat))
-    .addClass(setClass).addClass(imgFormat).css({
-      width: $(canvas).css('width'),
-      height: $(canvas).css('height')
-    });
-    return img;
-  }
-  function downImage() {
-    contentBox.find('.line').remove();
-    contentBox.find('.removeBtn').remove();
-    if (isHaveCanvas() === 'notCanvas')return;
-
-    var exportImgs = $('#exports-box img');
-
-    exportImgs.each(function (i, val) {
-      download($(val).attr('class').split(' ')[0], $(val).attr('src'));
-    })
-  }
-  function isHaveCanvas() {
-    if (!exportsBox.html()) {
-      layer.msg('没有转换canvas元素！', {
-        time: 2000
-      });
-      return false;
-    } else {
-      return true;
-    }
-  }
-  function isHaveContCard() {
-    if (!contentBox.find('.card-mask').get(0)) {
-      layer.msg('没有card-mask层！', {
-        time: 2000
-      });
-      return false;
-    } else {
-      return true;
-    }
-  }
-  function clearExports() {
-    exportsBox.html('');
-  }
-  function download(name, data) {
-    downloadFile(name, data);
-  }
-  function downloadFile(fileName, content) {
-    let aLink = document.createElement('a');
-    let blob = base64ToBlob(content); //new Blob([content]);
-
-    let evt = document.createEvent("HTMLEvents");
-    evt.initEvent("click", true, true);//initEvent 不加后两个参数在FF下会报错  事件类型，是否冒泡，是否阻止浏览器的默认行为
-    aLink.download = fileName;
-    aLink.href = URL.createObjectURL(blob);
-
-    aLink.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true, view: window}));//兼容火狐
-  }
-  function base64ToBlob(code) {
-    let parts = code.split(';base64,');
-    let contentType = parts[0].split(':')[1];
-    let raw = window.atob(parts[1]);
-    let rawLength = raw.length;
-
-    let uInt8Array = new Uint8Array(rawLength);
-
-    for (let i = 0; i < rawLength; ++i) {
-      uInt8Array[i] = raw.charCodeAt(i);
-    }
-    return new Blob([uInt8Array], {type: contentType});
-  }
-  function detectZoom (){
-    var ratio = 0,
-      screen = window.screen,
-      ua = navigator.userAgent.toLowerCase();
-   
-     if (window.devicePixelRatio !== undefined) {
-        ratio = window.devicePixelRatio;
-    }
-    else if (~ua.indexOf('msie')) {  
-      if (screen.deviceXDPI && screen.logicalXDPI) {
-        ratio = screen.deviceXDPI / screen.logicalXDPI;
-      }
-    }
-    else if (window.outerWidth !== undefined && window.innerWidth !== undefined) {
-      ratio = window.outerWidth / window.innerWidth;
-    }
-     
-     if (ratio){
-      ratio = Math.round(ratio * 100);
-    }
-     
-     return ratio;
-  }
-  function isDetectZoom() {
-    var isZoom = detectZoom() === 100;
-    
-    if (!isZoom) {
-      topMsg('当前缩放比例不是100%');
-    }
-    return isZoom;
   }
   
 
