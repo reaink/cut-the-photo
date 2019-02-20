@@ -6,7 +6,7 @@ layui.use(['element', 'layer', 'form'], function () {
   var $ = layui.$,
     layer = layui.layer,
     form = layui.form,
-    version = 'beta 1.4.8';
+    version = 'beta 1.4.9';
 
 
   var contentBox = $('.main-content'),
@@ -753,7 +753,7 @@ layui.use(['element', 'layer', 'form'], function () {
             if (!card.find('.card-name').get(0)){
               card.append(`<span class="card-name">${$('#set-plate-div .card-name').val()}</span>`);
             } else {
-              card.find('.card-name').html(`<span class="card-name">${$('#set-plate-div .card-name').val()}</span>`);
+              card.find('.card-name').text($('#set-plate-div .card-name').val());
             }
             layer.close(setLayer);
           },
