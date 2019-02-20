@@ -783,16 +783,18 @@ layui.use(['element', 'layer'], function () {
       })
     } else if (isCustom) {
       var exportsCode = __creEl('textarea');
-      cardBack = card.clone(true);
+        cardBack = card.clone(true),
+        removeBtn = $('<button class="layui-btn layui-btn-fluid">删除节点</button>');
 
       //设置版块标题
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${card.attr('class').split(' ')[0]}</small></div>`);
 
       //删除版块按钮
-      $(contmenu).append('<button class="layui-btn layui-btn-fluid">删除节点</button>').on('click', function () {
+      $(removeBtn).on('click', function () {
         card.remove();
         ContMenu().hide();
       })
+      $(contmenu).append(removeBtn);
 
       //输出代码版块
       cardBack.css({
