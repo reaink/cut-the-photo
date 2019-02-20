@@ -25,6 +25,20 @@
   margin: 0 !important;
 }
 
+.cont {
+  position: relative;
+  margin: 0 auto;
+  text-align: left;
+  width: 1256px;
+  font: 14px/26px Simsun;
+}
+
+.cont::after {
+  content: ' ';
+  display: block;
+  clear: both;
+}
+
 .text-center {
   text-align: center !important;
   margin: 0 auto !important;
@@ -37,6 +51,7 @@
   float: right;
 }
 
+
 .tools-box {
   margin: 10px 0;
   box-shadow: 0 2px 5px rgba(0,0,0,.2);
@@ -48,7 +63,7 @@
 .main-content {
   position: relative;
   margin: 0 auto 30px;
-  width: 200px;
+  width: 1300px;
   min-height: 200px;
   box-shadow: 0 0 3px #ccc;
   .split-card {
@@ -80,7 +95,6 @@ h3 {
 
 #exports-box {
   margin: 10px auto 20px;
-  min-width: 200px;
   max-width: 90%;
   min-height: 200px;
   box-shadow: 0 0 3px #ccc;
@@ -98,5 +112,14 @@ h3 {
   }
   .layui-field-box {
     text-align: center;
+  }
+}
+
+.top2-tools-box .text-right {
+  .cont-width-val {
+    margin: 5px;
+    display: inline-block;
+    width: 135px;
+    padding-bottom: 2px;
   }
 }

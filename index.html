@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Cut The Photo Home</title>
+  <link rel="icon" href="/favicon.ico">
+  <link rel="shourcut icon" href="/favicon.ico" type="image/ico">
   <link rel="stylesheet" href="layui/css/layui.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -36,14 +38,9 @@
           <button class="layui-btn addline" data-px="100%" data-name="end-btn" title="0">结尾线</button>
         </div>
         <div class="layui-col-xs6 text-right">
+          <input id="cont-width-slider" type="txt" min="0" class="layui-input cont-width-val tips" data-tips="设置.cont区域内容宽度回车键确定" placeholder="输入主内容区宽度">
           <button class="layui-btn to-tools-box2" title="定位当前位置到输出工具栏">输出栏</button>
           <button class="layui-btn" title="如需放大缩小请使用浏览器自带 Ctrl + 滚轮调整">缩放说明</button>
-          <!-- <span class="cont-title">Dev:</span>
-          <button id="scale-init" class="layui-btn">初始化</button>
-          <div class="layui-btn-group scale-box">
-            <button id="scale-sub" class="layui-btn">-</button>
-            <button id="scale-plus" class="layui-btn mg0">+</button>
-          </div> -->
         </div>
       </div>
       <h3><span>Main Content</span></h3>

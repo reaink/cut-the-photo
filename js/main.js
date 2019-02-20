@@ -2,10 +2,9 @@
 * @author sr_<nmlixa@163.com>
 * @date  2019/02/14 15:30:25
 */
-layui.use(['element', 'layer', 'form'], function () {
+layui.use(['element', 'layer'], function () {
   var $ = layui.$,
     layer = layui.layer,
-    form = layui.form,
     version = 'beta 1.4.9';
 
 
@@ -18,7 +17,9 @@ layui.use(['element', 'layer', 'form'], function () {
     _scale = 1,
     idNum = 1,
     cardNum = 1,
-    imgFormat = 'jpeg';
+    contWidth = 1200 + 'px',
+    imgFormat = 'jpeg',
+    setCardID = 0;
 
   //初始化元素
   function initElement() {
@@ -32,14 +33,15 @@ layui.use(['element', 'layer', 'form'], function () {
     setExportBoxWidth();
 
     //control
-    initControlBtnsEvent();
+    initControlElEvent();
   }
   //控制按钮群
-  function initControlBtnsEvent() {
+  function initControlElEvent() {
     initToolsBtn();
     initStartEndBtn();
-    // initScaleControls();
     initExportsBtn();
+    initTips();
+    initsetContWidthInput();
     $('#upload-img').on('change', uploadImg);
 
     $('#clear-other').on('click', setOther);
@@ -126,37 +128,24 @@ layui.use(['element', 'layer', 'form'], function () {
       });
     })
   }
-  /* function initScaleControls(){
-    var subBtn = $('#scale-sub'),
-      plusBtn =$('#scale-plus'),
-      initBtn = $('#scale-init');
-
-    initStyle = {
-      width: contentBox.css('width'),
-      height: contentBox.css('height'),
-      margin: contentBox.css('margin')
-    }
-    
-    subBtn.on('click', function (){
-      setFullScreenCenter();
-      $('body').css({
-        zoom: (_scale -= 0.25)
-      });
+  function initTips() {
+    var tip;
+    $('.tips').each(function (index, el) {
+      $(el).on('mouseenter', function () {
+        tip = layer.tips($(el).attr('data-tips'), $(el), {
+          tips: 1
+        })
+      }).on('mouseleave', function name() {
+        layer.close(tip);
+      })
     })
-    plusBtn.on('click', function (){
-      setFullScreenCenter();
-      $('body').css({
-        zoom: (_scale += 0.25)
-      });
+  }
+  function initsetContWidthInput() {
+    $('#cont-width-slider').on('keyup', function () {
+      contWidth = parseInt($(this).val()) + 'px';
+      contentBox.find('.cont').css('width', parseInt($(this).val()) + 'px');
     })
-    initBtn.on('click', function (){
-      setFullScreenCenter();
-      $('body').css({
-        zoom: 1
-      });
-      _scale = 1;
-    })
-  } */
+  }
   function ContMenu(){
     $(window).on('scroll', function (){
       $(contmenu).hide();
@@ -254,33 +243,11 @@ layui.use(['element', 'layer', 'form'], function () {
     
     if (_oldLines && parseInt($(_line).css('top')) > parseInt($(_oldLines[_oldLines.length - 1]).css('top'))) {
       var _oDiv = _creMask(),
-        removeBtn = __creEl('div'),
-        line = _createLineDom('#00f', false, _oDiv),
-        isOut;
+        line = _createLineDom('#00f', false, _oDiv);
 
-      $(removeBtn).addClass('remove-btn card-remove-btn');
       $(_oDiv).addClass('card-mask card-' + (idNum++) + ' card-num' + cardNum++);
 
       console.log('add line of top:', $(_line).css('top'), 'cardNum: ', cardNum);
-
-      $(removeBtn).css({
-        display: 'none',
-        'font-size': 30 + 'px',
-        color: '#0af',
-        position: 'absolute',
-        cursor: 'pointer'
-      }).addClass('layui-icon layui-icon-close').on('mouseenter', function () {
-        clearTimeout(isOut);
-        return false;
-      }).on('mousemove', function () {
-        return false;
-      }).on('mouseleave', function () {
-        isOut = setTimeout(function () {
-          $(removeBtn).hide();
-        }, 500)
-      }).attr('title', `删除idNum：${idNum}面板`);
-
-      contentBox.append(removeBtn);
 
       $(_oDiv).css({
         position: 'absolute',
@@ -296,31 +263,14 @@ layui.use(['element', 'layer', 'form'], function () {
       }).on('click', function (){
         $(contmenu).is(':visible') && $(contmenu).hide();
         return false;
-      }).on('mouseenter', function (ev) {
+      }).on('mouseenter', function () {
         $(_line).hide();
-        $(removeBtn).css({
-          top: parseInt($(_oDiv).css('top')) + (parseInt($(_oDiv).height()) / 2) - (parseInt($(removeBtn).height()) / 2) + 'px',
-          right: '-' + $(removeBtn).css('width'),
-          display: 'inline-block'
-        })
-        clearTimeout(isOut);
       }).on('mouseleave', function () {
         $(_line).show();
-        isOut = setTimeout(function () {
-          $(removeBtn).hide();
-        }, 500)
       }).on('contextmenu', function (ev) {
-        _creContextMenuList(ev, [_oDiv, removeBtn]);
+        _creContextMenuList(ev, [_oDiv]);
         return false;
       });
-      $(removeBtn).on('click', function (){
-        var tmpId = $(_oDiv).attr('class').split(' ')[3];
-        $('.' + tmpId).remove();
-        $(removeBtn).remove();
-        
-        return false;
-      })
-
       contentBox.append(_oDiv);
     } else {
       var line = _createLineDom('#00f');
@@ -403,12 +353,10 @@ layui.use(['element', 'layer', 'form'], function () {
     method = method || 'remove';
 
     if (method === 'remove') {
-      contentBox.find('.line,.remove-btn,.card-name').remove();
+      contentBox.find('.line,.card-name').remove();
       topMsg();
     } else if (method === 'hide') {
-      contentBox.find('.line,.remove-btn,.card-name').hide();
-      contentBox.find('').hide();
-      contentBox.find('').hide();
+      contentBox.find('.line,.card-name').hide();
       topMsg('已隐藏');
     } else if (method === 'show') {
       contentBox.find('.line,.card-name').show();
@@ -589,7 +537,6 @@ layui.use(['element', 'layer', 'form'], function () {
   }
   function _createLineDom(bgcolor, isglobal, cardId) {
     var line = __creEl('div'),
-      removeBtn = __creEl('i'),
       timer;
 
     bgcolor = bgcolor || '#00dffc',
@@ -600,51 +547,12 @@ layui.use(['element', 'layer', 'form'], function () {
       height: '1px',
       background: bgcolor,
       zIndex: 999991
-    }).addClass('line line-' + idNum++);
-
-    $(removeBtn).css({
-      display: 'none',
-      'font-size': 30 + 'px',
-      position: 'absolute',
-      color: '#06f',
-      cursor: 'pointer'
-    }).addClass('layui-icon layui-icon-close remove-btn').on('mouseover', function () {
-      clearTimeout(timer);
-      return false;
-    }).on('mouseout', function () {
-      timer = setTimeout(function () {
-        $(line).css({
-          background: bgcolor,
-          transform: 'scale(1)'
-        });
-        $(removeBtn).hide();
-      }, 1000);
-    }).on('mousemove', function () {
-      return false;
-    }).attr('title', `删除idNum：${idNum}分隔线`);
+    });
 
     if (!isglobal) {
-      contentBox.append(removeBtn);
-
       $(line).on('mouseover', function (ev) {
         ev = ev || event;
-        var lineId = $(this).attr('class').split(' ')[1];
-
         $(this).css('transform', 'scaleY(5)');
-        
-        $(removeBtn).css({
-          top: parseInt($(this).css('top')) - (parseInt($(removeBtn).css('width')) / 2) + 'px',
-          left: '-' + parseInt($(removeBtn).css('width')) + 'px',
-          display: 'inline-block',
-          zIndex: 999992
-        }).on('click', function () {
-          $('.' + lineId).remove();
-          $(removeBtn).remove();
-          _oldLines.pop();
-          cardId && cardId.remove();
-          return false;
-        });
-
         return false;
       }).on('mouseenter', function (){
         clearTimeout(timer);
@@ -658,14 +566,15 @@ layui.use(['element', 'layer', 'form'], function () {
             background: bgcolor,
             transform: 'scale(1)'
           });
-          $(removeBtn).hide();
         }, 1000);
       }).on('click', function (){
         return false;
       }).on('contextmenu', function (ev){
-        _creContextMenuList(ev, [line, removeBtn, cardId]);
+        _creContextMenuList(ev, [line, cardId]);
         return false;
-      })
+      }).addClass('line line-' + idNum++);
+    } else {
+      $(line).addClass('line');
     }
     return line;
   }
@@ -687,7 +596,6 @@ layui.use(['element', 'layer', 'form'], function () {
 
     if (isMainContent){
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${card.attr('class')}</small></div>`);
-      $(contmenu).append(``)
     } else if (isCardMask) {
       //setName
       if (card.find('.card-name').get(0)) {
@@ -796,28 +704,43 @@ layui.use(['element', 'layer', 'form'], function () {
             var setDiv = $('#set-plate-div'),
               setElName = setDiv.find('.el-name').val(),
               setElCont = setDiv.find('.el-cont').val(),
-              setElStyle = setDiv.find('.el-style').val();
+              setElStyle = setDiv.find('.el-style').val(),
+              cont;
+
+            if (!card.find('.cont').get(0)) {
+              cont = __creEl('div');
+              $(cont).addClass('cont');
+            } else {
+              cont = card.find('.cont');
+            }
+
+            $(cont).css({
+              width: contWidth,
+              height: '100%'
+            });
 
             card.on('mousedown', function (ev) {
               var node = __creEl(setElName),
                 CurrTopStart = ev.clientY,
                 currWidthStart = ev.clientX;
 
-              $(node).addClass(setElName + ' add-plate').attr('style', setElStyle).text(setElCont).css({
-                left: ev.clientX - contentBox.offset().left + 'px',
-                top: ev.clientY - contentBox.offset().top + 'px'
-              }).on('contextmenu', function (ev) {
+              $(node).addClass(`add-plate num${setCardID++}`).on('contextmenu', function (ev) {
                 _creContextMenuList(ev, [node]);
                 return false;
+              }).attr('style', setElStyle).text(setElCont).css({
+                left: ev.clientX - $(cont).offset().left -  contentBox.offset().left + 'px',
+                top: $(cont).scrollTop() + parseInt($(node).height()) + 'px'
               });
 
-              card.append(node);
+              $(cont).append(node);
+              card.append(cont);
+              var CurrHeight = parseInt($(node).height());
 
               $(this).on('mousemove', function (ev){
                 $(this).off('mousedown');
-                card.find(setElName).css({
+                card.find(`.num${setCardID - 1}`).css({
                   width: ev.clientX - currWidthStart + 'px',
-                  height: ev.clientY - CurrTopStart + 'px',
+                  height: ev.clientY - CurrTopStart + CurrHeight + 'px',
                 })
               }).on('mouseup', function () {
                 $(this).off('mousedown').off('mousemove');
@@ -871,13 +794,12 @@ layui.use(['element', 'layer', 'form'], function () {
         border: 'inherit'
       });
       cardBack.removeClass('add-plate');
-      var exportCont = `
-        <textarea cols="5" class="exports-code layui-textarea">${cardBack.prop('outerHTML')}</textarea>
-      `;
 
-      $(contmenu).append(exportCont);
+      var exportsCode = __creEl('textarea');
 
-      $(contmenu).find('.exports-code').focus().select();
+      $(exportsCode).addClass('exports-code layui-textarea').text(cardBack.prop('outerHTML'));
+
+      $(contmenu).append(exportsCode).off('mousemove').find('.exports-code').focus().select();
     } else {
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${card.attr('class')}</small></div>`);
     }
