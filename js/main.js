@@ -341,6 +341,7 @@ layui.use(['element', 'layer', 'form'], function () {
     if (!isHaveContCard()) return;
     if (!isDetectZoom()) return;
 
+    clearExports();
     var loading = layer.load(1, {shade: 0.5});
     setOther('hide');
     setExportBoxWidth();
@@ -395,7 +396,7 @@ layui.use(['element', 'layer', 'form'], function () {
         })
       })
       
-    }, 100)    
+    }, 500)    
   }
 
   function setOther(method) {
@@ -457,9 +458,7 @@ layui.use(['element', 'layer', 'form'], function () {
       $(c).hide();
     })
 
-    topMsg('已转换至' + imgFormat + '格式', {
-      time: 2000
-    });
+    topMsg('已转换至' + imgFormat + '格式');
   
   }
   function sortCanvas() {
