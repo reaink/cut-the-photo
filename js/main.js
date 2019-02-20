@@ -5,7 +5,7 @@
 layui.use(['element', 'layer'], function () {
   var $ = layui.$,
     layer = layui.layer,
-    version = 'beta 1.4.9';
+    version = 'beta 1.5.0';
 
 
   var contentBox = $('.main-content'),
@@ -160,8 +160,6 @@ layui.use(['element', 'layer'], function () {
       background: '#eee',
       border: 'solid 1px #aaa',
       zIndex: 999999
-    }).on('mousemove', function () {
-      return false;
     }).on('click', function () {
       return false;
     }).attr('class', 'contextMenu');
@@ -285,6 +283,40 @@ layui.use(['element', 'layer'], function () {
     _oldLines.push(line);
   }
 
+  function setOther(method) {
+    method = method || 'remove';
+
+    if (method === 'remove') {
+      contentBox.find('.line,.card-name').remove();
+      topMsg();
+    } else if (method === 'hide') {
+      contentBox.find('.line,.card-name').hide();
+      topMsg('已隐藏');
+    } else if (method === 'show') {
+      contentBox.find('.line,.card-name').show();
+    }
+
+  }
+  function setExportBoxWidth() {
+    exportsBox.css('width', contentBox.css('width'));
+  }
+  function setExportsCanvasContextMenu() {
+    var canvas = exportsBox.find('canvas');
+
+    canvas.on('contextmenu', function (ev) {
+      _creContextMenuList(ev, [exportsBox, canvas]);
+      return false;
+    })
+  }
+
+  function topMsg(msg, time, offset_) {
+    msg = msg || '已清除';
+    layer.msg(msg, {
+      time: time || 2000,
+      offset: offset_ || 't'
+    })
+  }
+
   function exportsCanvas() {
     var splitCards = contentBox.find('.split-card');
 
@@ -348,49 +380,6 @@ layui.use(['element', 'layer'], function () {
       
     }, 500)    
   }
-
-  function setOther(method) {
-    method = method || 'remove';
-
-    if (method === 'remove') {
-      contentBox.find('.line,.card-name').remove();
-      topMsg();
-    } else if (method === 'hide') {
-      contentBox.find('.line,.card-name').hide();
-      topMsg('已隐藏');
-    } else if (method === 'show') {
-      contentBox.find('.line,.card-name').show();
-    }
-
-  }
-  function setExportBoxWidth() {
-    exportsBox.css('width', contentBox.css('width'));
-  }
-  function setExportsCanvasContextMenu() {
-    var canvas = exportsBox.find('canvas');
-
-    canvas.on('contextmenu', function (ev) {
-      _creContextMenuList(ev, [exportsBox, canvas]);
-      return false;
-    })
-  }
-
-  function topMsg(msg, time, offset_) {
-    msg = msg || '已清除';
-    layer.msg(msg, {
-      time: time || 2000,
-      offset: offset_ || 't'
-    })
-  }
-
-  function clearAll() {
-    setOther('remove');
-    contentBox.find('.mask').remove();
-    contentBox.find('.card-remove-btn').remove();
-
-    topMsg();
-  }
-
   function toImage() {
     // sortCanvas();
     var isFormatJpg = imgFormat === 'jpeg';
@@ -476,6 +465,13 @@ layui.use(['element', 'layer'], function () {
   }
   function clearExports() {
     exportsBox.html('');
+  }
+  function clearAll() {
+    setOther('remove');
+    contentBox.find('.mask').remove();
+    contentBox.find('.card-remove-btn').remove();
+
+    topMsg();
   }
   function download(name, data) {
     downloadFile(name, data);
@@ -597,7 +593,6 @@ layui.use(['element', 'layer'], function () {
     if (isMainContent){
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${card.attr('class')}</small></div>`);
     } else if (isCardMask) {
-      //setName
       if (card.find('.card-name').get(0)) {
         setName = card.find('.card-name').text();
       } else {
@@ -710,6 +705,7 @@ layui.use(['element', 'layer'], function () {
             if (!card.find('.cont').get(0)) {
               cont = __creEl('div');
               $(cont).addClass('cont');
+              card.append(cont);
             } else {
               cont = card.find('.cont');
             }
@@ -720,27 +716,32 @@ layui.use(['element', 'layer'], function () {
             });
 
             card.on('mousedown', function (ev) {
+              topMsg('拖动选择添加元素宽高');
               var node = __creEl(setElName),
-                CurrTopStart = ev.clientY,
-                currWidthStart = ev.clientX;
+                currTop = ev.clientY - ($(cont).offset().top - $(window).scrollTop()),
+                currLeft = ev.clientX - $(cont).offset().left,
+                currTop2,
+                currLeft2;
 
               $(node).addClass(`add-plate num${setCardID++}`).on('contextmenu', function (ev) {
                 _creContextMenuList(ev, [node]);
                 return false;
               }).attr('style', setElStyle).text(setElCont).css({
-                left: ev.clientX - $(cont).offset().left -  contentBox.offset().left + 'px',
-                top: $(cont).scrollTop() + parseInt($(node).height()) + 'px'
+                left: parseInt(currLeft) + 'px',
+                top: parseInt(currTop) + 'px'
               });
 
               $(cont).append(node);
               card.append(cont);
-              var CurrHeight = parseInt($(node).height());
 
               $(this).on('mousemove', function (ev){
                 $(this).off('mousedown');
+                currTop2 = ev.clientY - ($(cont).offset().top - $(window).scrollTop()),
+                currLeft2 = ev.clientX - $(cont).offset().left;
+
                 card.find(`.num${setCardID - 1}`).css({
-                  width: ev.clientX - currWidthStart + 'px',
-                  height: ev.clientY - CurrTopStart + CurrHeight + 'px',
+                  width: parseInt(currLeft2 - currLeft) + 'px',
+                  height: parseInt(currTop2 - currTop) + 'px',
                 })
               }).on('mouseup', function () {
                 $(this).off('mousedown').off('mousemove');
@@ -788,18 +789,22 @@ layui.use(['element', 'layer'], function () {
         })
       })
     } else if (isCustom) {
-      cardBack = card.clone();
+      cardBack = card.clone(true);
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${card.attr('class').split(' ')[0]}</small></div>`);
       cardBack.css({
-        border: 'inherit'
-      });
-      cardBack.removeClass('add-plate');
+        border: ''
+      }).removeClass(`add-plate ${ cardBack.attr('class').match(/num\d+/) }`);
+
+      cardBack.attr('class') === "" && cardBack.removeAttr('class');
 
       var exportsCode = __creEl('textarea');
 
       $(exportsCode).addClass('exports-code layui-textarea').text(cardBack.prop('outerHTML'));
 
-      $(contmenu).append(exportsCode).off('mousemove').find('.exports-code').focus().select();
+      $(contmenu).append(exportsCode);
+      setTimeout(function () {
+        $(exportsCode).focus().select();
+      }, 100);
     } else {
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${card.attr('class')}</small></div>`);
     }
@@ -837,7 +842,6 @@ layui.use(['element', 'layer'], function () {
   function __creEl(name) {
     return document.createElement(name);
   }
-  
 
   initElement();
 });
