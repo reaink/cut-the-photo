@@ -642,7 +642,7 @@ layui.use(['element', 'layer', 'form'], function () {
           $('.' + lineId).remove();
           $(removeBtn).remove();
           _oldLines.pop();
-          cardId.remove();
+          cardId && cardId.remove();
           return false;
         });
 
@@ -664,7 +664,7 @@ layui.use(['element', 'layer', 'form'], function () {
       }).on('click', function (){
         return false;
       }).on('contextmenu', function (ev){
-        _creContextMenuList(ev, [line, removeBtn]);
+        _creContextMenuList(ev, [line, removeBtn, cardId]);
         return false;
       })
     }
@@ -705,7 +705,6 @@ layui.use(['element', 'layer', 'form'], function () {
         nodes.forEach(function (node) {
           $(node).remove();
         })
-        isLine && contentBox.find('.card-num' + (cardNum-1)).remove();
         _oldLines.pop();
         topMsg('已删除');
         ContMenu().hide();
@@ -851,7 +850,7 @@ layui.use(['element', 'layer', 'form'], function () {
         nodes.forEach(function (node) {
           $(node).remove();
         })
-        isLine && contentBox.find('.card-num' + (cardNum-1)).remove();
+        $(nodes[2]).remove();
         _oldLines.pop();
         topMsg('已删除');
         ContMenu().hide();
