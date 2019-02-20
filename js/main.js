@@ -5,7 +5,7 @@
 layui.use(['element', 'layer'], function () {
   var $ = layui.$,
     layer = layui.layer,
-    version = 'beta 1.5.0';
+    version = 'beta 1.5.1';
 
 
   var contentBox = $('.main-content'),
@@ -42,6 +42,7 @@ layui.use(['element', 'layer'], function () {
     initExportsBtn();
     initTips();
     initsetContWidthInput();
+    initExportsCode();
     $('#upload-img').on('change', uploadImg);
 
     $('#clear-other').on('click', setOther);
@@ -112,7 +113,6 @@ layui.use(['element', 'layer'], function () {
     toToolsBox2Btn.on('click', function () {
       $('body,html').scrollTop($(toolsBox2).offset().top);
     })
-    
 
   }
   function initExportsBtn() {
@@ -144,6 +144,12 @@ layui.use(['element', 'layer'], function () {
     $('#cont-width-slider').on('keyup', function () {
       contWidth = parseInt($(this).val()) + 'px';
       contentBox.find('.cont').css('width', parseInt($(this).val()) + 'px');
+    })
+  }
+  function initExportsCode() {
+    $('#exports-code').on('click', function () {
+      console.log('dev...');
+      
     })
   }
   function ContMenu(){
@@ -288,10 +294,8 @@ layui.use(['element', 'layer'], function () {
 
     if (method === 'remove') {
       contentBox.find('.line,.card-name').remove();
-      topMsg();
     } else if (method === 'hide') {
       contentBox.find('.line,.card-name').hide();
-      topMsg('已隐藏');
     } else if (method === 'show') {
       contentBox.find('.line,.card-name').show();
     }
@@ -470,8 +474,6 @@ layui.use(['element', 'layer'], function () {
     setOther('remove');
     contentBox.find('.mask').remove();
     contentBox.find('.card-remove-btn').remove();
-
-    topMsg();
   }
   function download(name, data) {
     downloadFile(name, data);
@@ -601,9 +603,7 @@ layui.use(['element', 'layer'], function () {
 
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${setName}</small></div>`)
 
-      $(removeBtn).css({
-        width: '100%',
-      }).addClass('layui-btn').text('删除节点').on('click', function(){
+      $(removeBtn).addClass('layui-btn layui-btn-fluid').text('删除节点').on('click', function(){
         nodes.forEach(function (node) {
           $(node).remove();
         })
@@ -612,9 +612,7 @@ layui.use(['element', 'layer'], function () {
         ContMenu().hide();
       });
   
-      $(setBtn).css({
-        width: '100%',
-      }).addClass('layui-btn').text('设置节点').on('click', function(){
+      $(setBtn).addClass('layui-btn layui-btn-fluid').text('设置节点').on('click', function(){
         setLayer = layer.open({
           btn: ['设置', '取消'],
           title: '设置当前版块',
@@ -668,9 +666,7 @@ layui.use(['element', 'layer'], function () {
         })
       });
 
-      $(addBtn).css({
-        width: '100%',
-      }).addClass('layui-btn').text('添加节点').on('click', function () {
+      $(addBtn).addClass('layui-btn layui-btn-fluid').text('添加节点').on('click', function () {
         setLayer = layer.open({
           btn: ['设置', '取消'],
           title: '添加节点',
@@ -767,15 +763,12 @@ layui.use(['element', 'layer'], function () {
 
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${setName}</small></div>`)
 
-      $(removeBtn).css({
-        width: '100%',
-      }).addClass('layui-btn').text('删除节点').on('click', function(){
+      $(removeBtn).addClass('layui-btn layui-btn-fluid').text('删除节点').on('click', function(){
         nodes.forEach(function (node) {
           $(node).remove();
         })
         $(nodes[2]).remove();
         _oldLines.pop();
-        topMsg('已删除');
         ContMenu().hide();
       });
 
@@ -789,15 +782,24 @@ layui.use(['element', 'layer'], function () {
         })
       })
     } else if (isCustom) {
+      var exportsCode = __creEl('textarea');
       cardBack = card.clone(true);
+
+      //设置版块标题
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${card.attr('class').split(' ')[0]}</small></div>`);
+
+      //删除版块按钮
+      $(contmenu).append('<button class="layui-btn layui-btn-fluid">删除节点</button>').on('click', function () {
+        card.remove();
+        ContMenu().hide();
+      })
+
+      //输出代码版块
       cardBack.css({
         border: ''
       }).removeClass(`add-plate ${ cardBack.attr('class').match(/num\d+/) }`);
 
       cardBack.attr('class') === "" && cardBack.removeAttr('class');
-
-      var exportsCode = __creEl('textarea');
 
       $(exportsCode).addClass('exports-code layui-textarea').text(cardBack.prop('outerHTML'));
 

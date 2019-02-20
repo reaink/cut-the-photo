@@ -38,7 +38,7 @@
           <button class="layui-btn addline" data-px="100%" data-name="end-btn" title="0">结尾线</button>
         </div>
         <div class="layui-col-xs6 text-right">
-          <input id="cont-width-slider" type="txt" min="0" class="layui-input cont-width-val tips" data-tips="设置.cont区域内容宽度回车键确定" placeholder="输入主内容区宽度">
+          <input id="cont-width-slider" type="number" min="0" class="layui-input cont-width-val tips" data-tips="设置.cont区域内容宽度回车键确定" placeholder="输入主内容区宽度">
           <button class="layui-btn tips to-tools-box2" data-tips="定位当前位置到输出工具栏">输出栏</button>
           <button class="layui-btn tips" data-tips="如需放大缩小请使用浏览器自带 Ctrl + 滚轮调整">缩放说明</button>
         </div>
@@ -51,13 +51,13 @@
     <div class="layui-row tools-box tools-box2">
       <div class="layui-col-xs6">
         <button id="clear-exports" class="layui-btn">清空输出</button>
-        <button id="exports-code" class="layui-btn">输出代码</button>
+        <button id="exports-code" class="layui-btn tips" data-tips="开发中……">输出代码</button>
       </div>
       <div class="layui-col-xs6 text-right">
         <span>输出图片格式：.<span class="img-format">jpg</span></span>
         <div class="layui-btn-group set-img-format-box">
-          <button class="layui-btn" format="jpg">jpg</button>
-          <button class="layui-btn" format="png">png</button>
+          <button class="layui-btn tips" data-tips="转换Canvas至jpg图片" format="jpg">jpg</button>
+          <button class="layui-btn tips" data-tips="转换Canvas至png图片" format="png">png</button>
         </div>
         <button id="down-image" class="layui-btn">下载图片</button>
       </div>
@@ -67,7 +67,7 @@
   <div class="layui-fluid">
     <div id="exports-box" class="exports-box"></div>
   </div>
-  
+
   <script src="layui/layui.js"></script>
   <script src="js/html2canvas.min.js"></script>
   <script src="js/main.js"></script>
