@@ -29,7 +29,7 @@ layui.use(['element', 'layer'], function () {
     //view
     initContentBox();
     initSetFullCenter();
-    ContMenu();
+    ContMenu.init();
     setExportBoxWidth();
 
     //control
@@ -154,33 +154,43 @@ layui.use(['element', 'layer'], function () {
   }
 
   //contmenu
-  function ContMenu(){
-    $(window).on('scroll', function (){
+  var ContMenu = {
+    init: function () {
+      $(window).on('scroll', function (){
+        $(contmenu).hide();
+        contentBox.on('mousemove', contMove);
+        contentBox.on('click', addLine);
+      })
+      $(document).on('click', function (){
+        $(contmenu).hide();
+        contentBox.on('mousemove', contMove);
+        contentBox.on('click', addLine);
+      })
+      $(contmenu).css({
+        display: 'none',
+        position: 'fixed',
+        width: 200 + 'px',
+        background: '#eee',
+        border: 'solid 1px #aaa',
+        zIndex: 999999
+      }).on('mousemove', function () {
+        return false;
+      }).on('click', function () {
+        return false;
+      }).attr('class', 'contextMenu');
+  
+      $('body').append(contmenu);
+    },
+    hide: function () {
       $(contmenu).hide();
-      contentBox.on('mousemove', contMove);
-      contentBox.on('click', addLine);
-    })
-    $(document).on('click', function (){
-      $(contmenu).hide();
-      contentBox.on('mousemove', contMove);
-      contentBox.on('click', addLine);
-    })
-    $(contmenu).css({
-      display: 'none',
-      position: 'fixed',
-      width: 200 + 'px',
-      background: '#eee',
-      border: 'solid 1px #aaa',
-      zIndex: 999999
-    }).on('mousemove', function () {
-      return false;
-    }).on('click', function () {
-      return false;
-    }).attr('class', 'contextMenu');
-
-    $('body').append(contmenu);
-
-    return $(contmenu);
+    },
+    event: function (method) {
+      if (method === 'on') {
+        $(contmenu).on('mousemove', contMove).on('click', addLine);
+      } else if (method === 'off') {
+        $(contmenu).off('mousemove').off('click');
+      }
+    }
   }
 
   //contmove
@@ -400,7 +410,7 @@ layui.use(['element', 'layer'], function () {
             setOther('show');
             setExportsCanvasContextMenu();
             _creContextMenuList(1, [exportsBox, exportsBox.find('canvas')]);
-            ContMenu().hide();
+            ContMenu.hide();
           }
         })
       })
@@ -630,7 +640,8 @@ layui.use(['element', 'layer'], function () {
         })
         _oldLines.pop();
         topMsg('已删除');
-        ContMenu().hide();
+        ContMenu.hide();
+        contentBox.on('mousemove', contMove).on('click', addLine);
       });
   
       $(setBtn).addClass('layui-btn layui-btn-fluid').text('设置节点').on('click', function(){
@@ -660,7 +671,7 @@ layui.use(['element', 'layer'], function () {
               }
             });
 
-            ContMenu().hide();
+            ContMenu.hide();
           },
           yes: function (index){
             if ($('#set-plate-div .card-name').val()){
@@ -709,7 +720,7 @@ layui.use(['element', 'layer'], function () {
               return false;
             })
 
-            ContMenu().hide();
+            ContMenu.hide();
             elCont.focus();
           },
           yes: function (index){
@@ -771,7 +782,7 @@ layui.use(['element', 'layer'], function () {
           }
         })
 
-        ContMenu().hide();
+        ContMenu.hide();
       })
   
       $(contmenu).append(removeBtn);
@@ -789,7 +800,8 @@ layui.use(['element', 'layer'], function () {
         })
         $(nodes[2]).remove();
         _oldLines.pop();
-        ContMenu().hide();
+        ContMenu.hide();
+        contentBox.on('mousemove', contMove).on('click', addLine);
       });
 
       $(contmenu).append(removeBtn);
@@ -812,7 +824,8 @@ layui.use(['element', 'layer'], function () {
       //删除版块按钮
       $(removeBtn).on('click', function () {
         card.remove();
-        ContMenu().hide();
+        ContMenu.hide();
+        contentBox.on('mousemove', contMove).on('click', addLine);
       })
       $(contmenu).append(removeBtn);
 
