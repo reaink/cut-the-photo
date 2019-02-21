@@ -365,7 +365,7 @@ layui.use(['element', 'layer'], function () {
     setOther('hide');
     setExportBoxWidth();
     setFullScreenCenter(1, exportsBox);
-    contentBox.find('.card-remove-btn').hide();
+    contentBox.find('.add-plate').hide();
     exportsBox.css('max-width', 'inherit');
     
     topMsg('请稍等……');
@@ -408,6 +408,7 @@ layui.use(['element', 'layer'], function () {
             layer.close(loading);
             topMsg('输出完成');
             setOther('show');
+            contentBox.find('.add-plate').show();
             setExportsCanvasContextMenu();
             _creContextMenuList(1, [exportsBox, exportsBox.find('canvas')]);
             ContMenu.hide();
