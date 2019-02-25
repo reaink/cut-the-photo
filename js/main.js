@@ -245,7 +245,6 @@ layui.use(['element', 'layer'], function () {
         })
       };
 
-
       reader.readAsDataURL(file);
     }
     
@@ -286,17 +285,18 @@ layui.use(['element', 'layer'], function () {
         return false;
       });
       contentBox.append(_oDiv);
-    } else {
+    } else if (parseInt($(_line).css('top')) !== parseInt($(_oldLines[_oldLines.length - 1]).css('top'))) {
       var line = _createLineDom('#00f');
       console.log('add line of top:', $(_line).css('top'));
     }
 
-    $(line).css({
-      top: $(_line).css('top')
-    })
-
-    contentBox.append(line);
-    _oldLines.push(line);
+    if (line) {
+      $(line).css({
+        top: $(_line).css('top')
+      })
+      contentBox.append(line);
+      _oldLines.push(line);
+    }
   }
 
   //set
@@ -611,6 +611,7 @@ layui.use(['element', 'layer'], function () {
     var removeBtn = __creEl('button'),
       setBtn = __creEl('button'),
       addBtn = __creEl('button'),
+      exportsCode = __creEl('button'),
       isMainContent = $(nodes[0]).hasClass('main-content'),
       isCardMask = $(nodes[0]).hasClass('card-mask'),
       isExportsBox = $(nodes[0]).hasClass('exports-box'),
@@ -707,11 +708,11 @@ layui.use(['element', 'layer'], function () {
           <div id="set-plate-div">
             <form class="layui-form card-data-form">
               <label>元素名称：</label>
-              <input class="layui-input el-name" type="text" placeholder="输入元素名称" value="div" required="required">
+              <input class="layui-input el-name" type="text" placeholder="输入元素名称" value="div">
               <label>元素内容：</label>
-              <input class="layui-input el-cont" type="text" placeholder="输入元素内容" required="required">
+              <textarea class="layui-textarea el-cont" type="text" placeholder="输入元素内容"></textarea>
               <label>元素样式：</label>
-              <input class="layui-input el-style" type="text" placeholder="输入元素样式" required="required">
+              <input class="layui-input el-style" type="text" placeholder="输入元素样式">
             </form>
           </div>
           `,
@@ -752,7 +753,7 @@ layui.use(['element', 'layer'], function () {
                 currTop2,
                 currLeft2;
 
-              $(node).addClass(`add-plate num${setCardID++}`).on('contextmenu', function (ev) {
+              $(node).addClass(`pos-a add-plate num${setCardID++}`).on('contextmenu', function (ev) {
                 _creContextMenuList(ev, [node]);
                 return false;
               }).attr('style', setElStyle).text(setElCont).css({
@@ -784,11 +785,44 @@ layui.use(['element', 'layer'], function () {
         })
 
         ContMenu.hide();
+      });
+
+      $(exportsCode).addClass('layui-btn layui-btn-fluid').text('输出代码').on('click', function () {
+        setLayer = layer.open({
+          title: '输出代码',
+          content: `
+          <div id="set-plate-div">
+            <textarea class="layui-textarea exports-code"></textarea>
+          </div>
+          `,
+          success: function () {
+            var exportsCode = $('#set-plate-div .exports-code'),
+              cardBack = card.clone(true),
+              codeAll = '';
+      
+
+            cardBack.find('.add-plate').each(function (index, el) {
+              $(el).css({
+                border: ''
+              }).removeClass(`add-plate ${ $(el).attr('class').match(/num\d+/) }`);
+              $(el).attr('class') === "" && $(el).removeAttr('class');
+
+              codeAll += $(el).prop('outerHTML') + '\n';
+            })
+
+            exportsCode.text(codeAll);
+            ContMenu.hide();
+            exportsCode.focus().select();
+          }
+        })
+
+        ContMenu.hide();
       })
   
       $(contmenu).append(removeBtn);
       $(contmenu).append(setBtn);
       $(contmenu).append(addBtn);
+      $(contmenu).append(exportsCode);
 
     } else if (isLine){
       setName = card.attr('class').split(' ')[1];
