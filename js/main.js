@@ -144,12 +144,11 @@ layui.use(['element', 'layer'], function () {
     $('#cont-width-slider').on('keyup', function () {
       contWidth = parseInt($(this).val()) + 'px';
       contentBox.find('.cont').css('width', parseInt($(this).val()) + 'px');
-    })
+    }).val(parseInt(contWidth));
   }
   function initExportsCode() {
     $('#exports-code').on('click', function () {
       console.log('dev...');
-      
     })
   }
 
