@@ -464,8 +464,7 @@ layui.use(['element', 'layer'], function () {
     return img;
   }
   function downImage() {
-    contentBox.find('.line').remove();
-    contentBox.find('.removeBtn').remove();
+    setOther('hide');
     if (isHaveCanvas() === 'notCanvas')return;
 
     var exportImgs = $('#exports-box img'),
@@ -479,6 +478,7 @@ layui.use(['element', 'layer'], function () {
         topMsg(`下载第${i}张，共${exportImgs.length}张`);
         i++;
       } else {
+        setOther('show');
         topMsg(`下载共${exportImgs.length}张`, 3000);
         clearInterval(timer);
       }
