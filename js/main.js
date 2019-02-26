@@ -768,6 +768,9 @@ layui.use(['element', 'layer'], function () {
               height: '100%'
             });
 
+            // format content
+            setElCont = setElCont.replace(/\n/g, '<br>').replace(/\s{2}/g, '&emsp;');
+
             card.on('mousedown', function (ev) {
               topMsg('拖动选择添加元素宽高');
               var node = __creEl(setElName),
@@ -779,7 +782,7 @@ layui.use(['element', 'layer'], function () {
               $(node).addClass(`pos-a add-plate num${setCardID++}`).on('contextmenu', function (ev) {
                 _creContextMenuList(ev, [node]);
                 return false;
-              }).attr('style', setElStyle).text(setElCont).css({
+              }).attr('style', setElStyle).html(setElCont).css({
                 left: parseInt(currLeft) + 'px',
                 top: parseInt(currTop) + 'px'
               });
