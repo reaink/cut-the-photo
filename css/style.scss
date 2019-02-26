@@ -68,6 +68,12 @@
   box-shadow: 0 0 3px #ccc;
   .split-card {
     overflow: hidden;
+    .cont {
+      border {
+        left: #09f;
+        right: #09f;
+      }
+    }
     .card-name {
       float: left;
       padding: 5px;

@@ -43,6 +43,7 @@ layui.use(['element', 'layer'], function () {
     initStartEndBtn();
     initExportsBtn();
     initTips();
+    initsetContWidth();
     initsetContWidthInput();
     initExportsCode();
     $('#upload-img').on('change', uploadIMG);
@@ -148,10 +149,27 @@ layui.use(['element', 'layer'], function () {
       })
     })
   }
+  function initsetContWidth() {
+    if (!$('.set-width-style').get(0)) {
+      $('body').append(`
+        <style class="set-width-style">
+          .split-card .cont {
+            width: ${contWidth};
+          }
+        </style>
+      `)
+    } else {
+      $('style.set-width-style').html(`
+        .split-card .cont {
+          width: ${contWidth};
+        }
+    `)
+    }
+  }
   function initsetContWidthInput() {
-    $('#cont-width-slider').on('keyup', function () {
-      contWidth = parseInt($(this).val()) + 'px';
-      contentBox.find('.cont').css('width', parseInt($(this).val()) + 'px');
+    $('#cont-width-slider').on('keydown', function () {
+      contWidth = parseInt($('#cont-width-slider').val() - 1) + 'px !important';
+      initsetContWidth();
     }).val(parseInt(contWidth));
   }
   function initExportsCode() {
@@ -543,7 +561,7 @@ layui.use(['element', 'layer'], function () {
       screen = window.screen,
       ua = navigator.userAgent.toLowerCase();
    
-     if (window.devicePixelRatio !== undefined) {
+    if (window.devicePixelRatio !== undefined) {
         ratio = window.devicePixelRatio;
     }
     else if (~ua.indexOf('msie')) {  
@@ -554,12 +572,12 @@ layui.use(['element', 'layer'], function () {
     else if (window.outerWidth !== undefined && window.innerWidth !== undefined) {
       ratio = window.outerWidth / window.innerWidth;
     }
-     
-     if (ratio){
+    
+    if (ratio){
       ratio = Math.round(ratio * 100);
     }
-     
-     return ratio;
+    
+    return ratio;
   }
   function isDetectZoom() {
     var isZoom = detectZoom() === 100;
