@@ -69,13 +69,12 @@
   .split-card {
     overflow: hidden;
     .card-name {
-      display: inline-block;
+      float: left;
       padding: 5px;
       font-size: 14px;
-      color: #ccc;
-      text-shadow: 0 1px 5px #09f;
+      color: #fff;
       &:hover {
-        background: #666;
+        background: #333;
       }
     }
     .add-plate {

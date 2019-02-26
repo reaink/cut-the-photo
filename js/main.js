@@ -640,6 +640,14 @@ layui.use(['element', 'layer'], function () {
       } else {
         setName = card.attr('class').split(' ')[4];
       }
+      
+      if (!card.find('.cont').get(0)) {
+        cont = __creEl('div');
+        $(cont).addClass('cont');
+        card.append(cont);
+      } else {
+        cont = card.find('.cont');
+      }
 
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${setName}</small></div>`)
 
@@ -697,9 +705,9 @@ layui.use(['element', 'layer'], function () {
           },
           isInputName: function (){
             if (!card.find('.card-name').get(0)){
-              card.append(`<span class="card-name">${$('#set-plate-div .card-name').val()}</span>`);
+              $(cont).append(`<span class="card-name">${$('#set-plate-div .card-name').val()}</span>`);
             } else {
-              card.find('.card-name').text($('#set-plate-div .card-name').val());
+              $(cont).find('.card-name').text($('#set-plate-div .card-name').val());
             }
             backHistory['cardName'] = $('#set-plate-div .card-name').val();
             layer.close(setLayer);
