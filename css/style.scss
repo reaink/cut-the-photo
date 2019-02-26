@@ -69,9 +69,12 @@
   .split-card {
     overflow: hidden;
     .cont {
-      border {
-        left: #09f;
-        right: #09f;
+      border-left: 1px dashed transparent;
+      border-right: 1px dashed transparent;
+      transition: all .3s;
+      &:hover {
+        border-color: #09f;
+        transition: all .3s;
       }
     }
     .card-name {
@@ -87,9 +90,11 @@
       position: absolute;
       display: inline-block;
       border: 1px solid transparent;
+      transition: all .3s;
       &:hover,
       &:focus {
         border: 1px solid #09f;
+        transition: all .3s;
       }
     }
   }
