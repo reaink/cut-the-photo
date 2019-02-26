@@ -90,11 +90,11 @@
       position: absolute;
       display: inline-block;
       border: 1px solid transparent;
-      transition: all .3s;
+      transition: border-color .3s;
       &:hover,
       &:focus {
         border: 1px solid #09f;
-        transition: all .3s;
+        transition: border-color .3s;
       }
     }
   }
