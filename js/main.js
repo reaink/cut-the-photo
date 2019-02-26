@@ -5,7 +5,7 @@
 layui.use(['element', 'layer'], function () {
   var $ = layui.$,
     layer = layui.layer,
-    version = 'beta 1.5.3';
+    version = 'beta 1.5.4';
 
 
   var contentBox = $('.main-content'),
@@ -674,7 +674,7 @@ layui.use(['element', 'layer'], function () {
 
             //如果有历史cardName则填入
             backHistory['cardName'] && 
-            $('#set-plate-div .card-name').val(backHistory['cardName'])
+            $('#set-plate-div .card-name').val(backHistory['cardName']);
 
             $('#set-plate-div .card-name').focus().keyup(function (ev){
               if (ev.keyCode === 13 && $('#set-plate-div .card-name').val()){
@@ -683,7 +683,7 @@ layui.use(['element', 'layer'], function () {
               } else if (ev.keyCode === 13 && !$('#set-plate-div .card-name').val()) {
                 here.notInputName();
               }
-            });
+            }).select();
 
             ContMenu.hide();
           },
