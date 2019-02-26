@@ -798,9 +798,13 @@ layui.use(['element', 'layer'], function () {
                 card.find(`.num${setCardID - 1}`).css({
                   width: parseInt(currLeft2 - currLeft) + 'px',
                   height: parseInt(currTop2 - currTop) + 'px',
+                  border: '1px solid #09f'
                 })
               }).on('mouseup', function () {
                 $(this).off('mousedown').off('mousemove');
+                card.find(`.num${setCardID - 1}`).css({
+                  border: ''
+                })
               })
             })
             topMsg('请在当前版块点击并拖动选择添加元素宽高');

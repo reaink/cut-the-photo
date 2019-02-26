@@ -81,7 +81,11 @@
     .add-plate {
       position: absolute;
       display: inline-block;
-      border: 1px solid #09f;
+      border: 1px solid transparent;
+      &:hover,
+      &:focus {
+        border: 1px solid #09f;
+      }
     }
   }
 }
