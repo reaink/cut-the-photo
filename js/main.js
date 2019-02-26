@@ -19,7 +19,8 @@ layui.use(['element', 'layer'], function () {
     cardNum = 1,
     contWidth = 1200 + 'px',
     imgFormat = 'jpeg',
-    setCardID = 0;
+    setCardID = 0,
+    backHistory = {};
 
   //初始化元素
   function initElement() {
@@ -34,8 +35,9 @@ layui.use(['element', 'layer'], function () {
 
     //control
     initControlElEvent();
+    initBeforeReload();
   }
-  //控制按钮群
+  //控制
   function initControlElEvent() {
     initToolsBtn();
     initStartEndBtn();
@@ -51,6 +53,12 @@ layui.use(['element', 'layer'], function () {
 
     $('#down-image').on('click', downImage)
     $('#clear-exports').on('click', clearExports)
+  }
+  function initBeforeReload() {
+    $(window).bind('beforeunload',function () {
+      confirm('你将会关闭该页面！')
+      return ('你将会关闭页面！');
+    });
   }
   //初始内部数据
   function initInternal() {
@@ -663,6 +671,11 @@ layui.use(['element', 'layer'], function () {
             $('.card-data-form').on('submit', function (){
               return false;
             })
+
+            //如果有历史cardName则填入
+            backHistory['cardName'] && 
+            $('#set-plate-div .card-name').val(backHistory['cardName'])
+
             $('#set-plate-div .card-name').focus().keyup(function (ev){
               if (ev.keyCode === 13 && $('#set-plate-div .card-name').val()){
                 here.isInputName();
@@ -688,6 +701,7 @@ layui.use(['element', 'layer'], function () {
             } else {
               card.find('.card-name').text($('#set-plate-div .card-name').val());
             }
+            backHistory['cardName'] = $('#set-plate-div .card-name').val();
             layer.close(setLayer);
           },
           notInputName: function (){
@@ -716,13 +730,19 @@ layui.use(['element', 'layer'], function () {
           </div>
           `,
           success: function () {
-            var elCont = $('#set-plate-div .el-cont');
+            var elName = $('#set-plate-div .el-name'),
+              elCont = $('#set-plate-div .el-cont'),
+              elStyle = $('#set-plate-div .el-style');
             $('.card-data-form').on('submit', function (){
               return false;
             })
 
+            backHistory['setElName'] && elName.val(backHistory['setElName']);
+            backHistory['setElCont'] && elCont.val(backHistory['setElCont']);
+            backHistory['setElStyle'] && elStyle.val(backHistory['setElStyle']);
+
             ContMenu.hide();
-            elCont.focus();
+            elCont.focus().select();
           },
           yes: function (index){
             var setDiv = $('#set-plate-div'),
@@ -738,6 +758,10 @@ layui.use(['element', 'layer'], function () {
             } else {
               cont = card.find('.cont');
             }
+
+            backHistory['setElName'] = setElName;
+            backHistory['setElCont'] = setElCont;
+            backHistory['setElStyle'] = setElStyle;
 
             $(cont).css({
               width: contWidth,
