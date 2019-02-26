@@ -833,7 +833,7 @@ layui.use(['element', 'layer'], function () {
               }).removeClass(`add-plate ${ $(el).attr('class').match(/num\d+/) }`);
               $(el).attr('class') === "" && $(el).removeAttr('class');
 
-              codeAll += $(el).prop('outerHTML') + '\n';
+              codeAll += $(el).prop('outerHTML').replace(/&quot;/g, "'") + '\n';
             })
 
             exportsCode.text(codeAll);
@@ -897,7 +897,7 @@ layui.use(['element', 'layer'], function () {
 
       cardBack.attr('class') === "" && cardBack.removeAttr('class');
 
-      $(exportsCode).addClass('exports-code layui-textarea').text(cardBack.prop('outerHTML'));
+      $(exportsCode).addClass('exports-code layui-textarea').text(cardBack.prop('outerHTML').replace(/&quot;/g, "'"));
 
       $(contmenu).append(exportsCode);
       setTimeout(function () {
