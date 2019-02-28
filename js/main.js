@@ -10,9 +10,12 @@ layui.use(['element', 'layer'], function () {
 
   var contentBox = $('.main-content'),
     exportsBox = $('#exports-box'),
-    _line = _createLineDom('#00dffc', true),
+    rulerColor = '#00dffc',
+    _line = _createLineDom(rulerColor, true),
+    _globalRuler = {},
     _canvas,
-    contmenu = __creEl('div'),
+    ContMenu,//控制
+    contmenu = __creEl('div'),//全局元素
     _oldLines = [],
     _scale = 1,
     idNum = 1,
@@ -404,8 +407,9 @@ layui.use(['element', 'layer'], function () {
 
       splitCards.each(function (index, el) {
         var width = parseInt($(el).width()),
-          height = parseInt($(el).height()),
-          _canvas = __creEl('canvas');
+          height = parseInt($(el).height());
+        
+        _canvas = __creEl('canvas');
           
         var opts = {
           canvas: _canvas,
@@ -538,6 +542,7 @@ layui.use(['element', 'layer'], function () {
     return new Blob([uInt8Array], {type: contentType});
   }
 
+  //is
   function isHaveCanvas() {
     if (!exportsBox.html()) {
       topMsg('没有转换canvas元素！');
@@ -632,6 +637,61 @@ layui.use(['element', 'layer'], function () {
     }
     return line;
   }
+
+  _globalRuler = {
+    init: function (ev) {
+      var xRuler = __creEl('div'),
+        yRuler = __creEl('div');
+      
+      $(xRuler).css({
+        position: 'fixed',
+        width: '100%',
+        height: '1px',
+        left: 0,
+        top: ev.clientY - 1 + 'px',
+        backgroundColor: rulerColor,
+      })
+      $(yRuler).css({
+        position: 'fixed',
+        width: '1px',
+        height: '100%',
+        top: 0,
+        left: ev.clientX - 1 + 'px',
+        backgroundColor: rulerColor,
+      })
+      this.setRuler('xRuler', xRuler);
+      this.setRuler('yRuler', yRuler);
+      this.addGlobalRuler([xRuler, yRuler]);
+    },
+    setRuler: function (name, el) {
+      this[name] = el;
+    },
+    getRuler: function (name) {
+      return this[name]
+    },
+    setRulerPos: function (ev) {
+      var xRuler = this.getRuler('xRuler'),
+        yRuler = this.getRuler('yRuler');
+      $(xRuler).css({
+        top: ev.clientY - 1 +  'px'
+      })
+      $(yRuler).css({
+        left: ev.clientX - 1 + 'px'
+      })
+    },
+    addGlobalRuler: function (rulers) {
+      rulers.map(el => {
+        contentBox.append(el);
+      })
+    },
+    delGlobalRuler: function () {
+      var xRuler = this.getRuler('xRuler'),
+        yRuler = this.getRuler('yRuler');
+      $(xRuler).remove();
+      $(yRuler).remove();
+    }
+  }
+
   function _creContextMenuList(ev, nodes) {
     var removeBtn = __creEl('button'),
       setBtn = __creEl('button'),
@@ -777,6 +837,8 @@ layui.use(['element', 'layer'], function () {
               setElStyle = setDiv.find('.el-style').val(),
               cont;
 
+            contentBox.off('mousemove');
+
             if (!card.find('.cont').get(0)) {
               cont = __creEl('div');
               $(cont).addClass('cont');
@@ -798,6 +860,7 @@ layui.use(['element', 'layer'], function () {
             setElCont = setElCont.replace(/\n/g, '<br>').replace(/\s{2}/g, '&emsp;');
 
             card.on('mousedown', function (ev) {
+              $(_line).hide();
               topMsg('拖动选择添加元素宽高');
               var node = __creEl(setElName),
                 currTop = ev.clientY - ($(cont).offset().top - $(window).scrollTop()),
@@ -805,6 +868,7 @@ layui.use(['element', 'layer'], function () {
                 currTop2,
                 currLeft2;
 
+              _globalRuler.init(ev);
               $(node).addClass(`pos-a add-plate num${setCardID++}`).on('contextmenu', function (ev) {
                 _creContextMenuList(ev, [node]);
                 return false;
@@ -822,14 +886,20 @@ layui.use(['element', 'layer'], function () {
                 currLeft2 = ev.clientX - $(cont).offset().left;
 
                 card.find(`.num${setCardID - 1}`).css({
-                  width: parseInt(currLeft2 - currLeft) + 'px',
-                  height: parseInt(currTop2 - currTop) + 'px',
+                  width: parseInt(currLeft2 - currLeft) - 2 + 'px',
+                  height: parseInt(currTop2 - currTop) - 1 + 'px',
                   border: '1px solid #09f'
                 })
+                _globalRuler.setRulerPos(ev);
+                return false;
               }).on('mouseup', function () {
-                $(this).off('mousedown').off('mousemove');
+                _globalRuler.delGlobalRuler();
+                contentBox.on('mousemove', contMove);
                 card.find(`.num${setCardID - 1}`).css({
                   border: ''
+                })
+                $(this).off('mousemove').off('mouseup').on('mousemove', function () {
+                  return false;
                 })
               })
             })
@@ -943,6 +1013,7 @@ layui.use(['element', 'layer'], function () {
       left: ev.clientX + 'px'
     })
   }
+  
   function _creAddLineBtn(fontIcon, title) {
     var addLineBtn = __creEl('div');
 
