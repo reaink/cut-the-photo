@@ -929,38 +929,13 @@ layui.use(['element', 'layer'], function () {
             });
             
             // format content
-            setElCont = setElCont.replace(/\n/g, '<br>').replace(/\s{2}/g, '&emsp;');
+            setElCont = `
+            ${setElCont.replace(/\n/g, '<br>\n').replace(/\s{2}/g, '&emsp;')}`;
 
             card.on('mousedown', function (ev) {
               topMsg('拖动选择添加元素宽高');
-              var node = __creEl(setElName),
-                currTop = ev.clientY - ($(cont).offset().top - $(window).scrollTop()),
-                currLeft = ev.clientX - $(cont).offset().left,
-                currTop2,
-                currLeft2;
-              $(node).addClass(`pos-a add-plate num${setCardID++}`).on('contextmenu', function (ev) {
-                _creContextMenuList(ev, [node]);
-                return false;
-              }).attr('style', setElStyle).html(setElCont).css({
-                left: parseInt(currLeft) + 'px',
-                top: parseInt(currTop) + 'px'
-              });
 
-              $(cont).append(node);
-              card.append(cont);
-
-              $(this).on('mousemove', function (ev){
-                $(this).off('mousedown');
-                currTop2 = ev.clientY - ($(cont).offset().top - $(window).scrollTop()),
-                currLeft2 = ev.clientX - $(cont).offset().left;
-
-                card.find(`.num${setCardID - 1}`).css({
-                  width: parseInt(currLeft2 - currLeft) - 2 + 'px',
-                  height: parseInt(currTop2 - currTop) - 1 + 'px',
-                  border: '1px solid #09f'
-                })
-                return false;
-              }).on('mouseup', function () {
+              $(this).on('mouseup', function () {
                 _globalRuler.delGlobalRuler();
                 contentBox.on('mousemove', contMove);
                 card.find(`.num${setCardID - 1}`).css({
@@ -984,7 +959,37 @@ layui.use(['element', 'layer'], function () {
               return false;
             }).on('mouseenter', function () {
               $(_line).remove();
-              _globalRuler.init(ev);
+              !_globalRuler.getRuler('xRuler') && _globalRuler.init(ev);
+              
+              var node = __creEl(setElName),
+                currTop = ev.clientY - ($(cont).offset().top - $(window).scrollTop()),
+                currLeft = ev.clientX - $(cont).offset().left,
+                currTop2,
+                currLeft2;
+              
+              $(node).addClass(`pos-a add-plate num${setCardID++}`).on('contextmenu', function (ev) {
+                _creContextMenuList(ev, [node]);
+                return false;
+              }).attr('style', setElStyle).html(setElCont).css({
+                left: parseInt(currLeft) + 'px',
+                top: parseInt(currTop) + 'px',
+                opacity: .5
+              });
+
+              $(this).on('mousemove', function (ev){
+                currTop2 = ev.clientY - ($(cont).offset().top - $(window).scrollTop()),
+                currLeft2 = ev.clientX - $(cont).offset().left;
+
+                card.find(`.num${setCardID - 1}`).css({
+                  width: parseInt(currLeft2 - currLeft) - 2 + 'px',
+                  height: parseInt(currTop2 - currTop) - 1 + 'px',
+                  border: '1px solid #09f'
+                })
+                return false;
+              })
+
+              $(cont).append(node);
+              card.append(cont);
               return false;
             }).on('mousemove', function (ev){
               _globalRuler.setRulerPos(ev);
