@@ -1002,8 +1002,15 @@ layui.use(['element', 'layer'], function () {
 
               codeAll += $(el).prop('outerHTML').replace(/&quot;/g, "'") + '\n';
             })
+            
+              exportTemp = `
+  <div class="setHeight" style="background:url(images/${card.attr('class').split(' ')[0]}.jpg) no-repeat top center;">
+    <div class="cont">
+      ${codeAll}    </div>
+  </div>
+              `
 
-            exportsCode.text(codeAll);
+            exportsCode.text(exportTemp.trim());
             ContMenu.hide();
             exportsCode.focus().select();
           }
@@ -1044,7 +1051,8 @@ layui.use(['element', 'layer'], function () {
     } else if (isCustom) {
       var exportsCode = __creEl('textarea');
         cardBack = card.clone(true),
-        removeBtn = $('<button class="layui-btn layui-btn-fluid">删除节点</button>');
+        removeBtn = $('<button class="layui-btn layui-btn-fluid">删除节点</button>'),
+        exportTemp = '';
 
       //设置版块标题
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${card.attr('class').split(' ')[0]}</small></div>`);
@@ -1063,8 +1071,17 @@ layui.use(['element', 'layer'], function () {
       }).removeClass(`add-plate ${ cardBack.attr('class').match(/num\d+/) }`);
 
       cardBack.attr('class') === "" && cardBack.removeAttr('class');
+      
+      exportTemp = `
+      <div class="setHeight" style="background:url(images/${card.attr('class').split(' ')[0]}.jpg) no-repeat top center;">
+        <div class="cont">
+          ${cardBack.prop('outerHTML').replace(/&quot;/g, "'")}
+        </div>
+      </div>
+      `
 
-      $(exportsCode).addClass('exports-code layui-textarea').text(cardBack.prop('outerHTML').replace(/&quot;/g, "'"));
+      $(exportsCode).addClass('exports-code layui-textarea').text(exportTemp.trim());
+
 
       $(contmenu).append(exportsCode);
       setTimeout(function () {
