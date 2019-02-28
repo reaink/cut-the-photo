@@ -698,6 +698,9 @@ layui.use(['element', 'layer'], function () {
         left: 0,
         top: ev.clientY - 1 + 'px',
         backgroundColor: rulerColor,
+      }).on('mouseover', function () {
+        $(this).show();
+        return false;
       })
       $(yRuler).css({
         position: 'fixed',
@@ -706,6 +709,9 @@ layui.use(['element', 'layer'], function () {
         top: 0,
         left: ev.clientX - 1 + 'px',
         backgroundColor: rulerColor,
+      }).on('mouseover', function () {
+        $(this).show();
+        return false;
       })
       this.setRuler('xRuler', xRuler);
       this.setRuler('yRuler', yRuler);
@@ -904,8 +910,7 @@ layui.use(['element', 'layer'], function () {
               setElStyle = setDiv.find('.el-style').val(),
               cont;
 
-            contentBox.off('mousemove');
-
+            
             if (!card.find('.cont').get(0)) {
               cont = __creEl('div');
               $(cont).addClass('cont');
@@ -922,20 +927,17 @@ layui.use(['element', 'layer'], function () {
               width: contWidth,
               height: '100%'
             });
-
+            
             // format content
             setElCont = setElCont.replace(/\n/g, '<br>').replace(/\s{2}/g, '&emsp;');
 
             card.on('mousedown', function (ev) {
-              $(_line).hide();
               topMsg('拖动选择添加元素宽高');
               var node = __creEl(setElName),
                 currTop = ev.clientY - ($(cont).offset().top - $(window).scrollTop()),
                 currLeft = ev.clientX - $(cont).offset().left,
                 currTop2,
                 currLeft2;
-
-              _globalRuler.init(ev);
               $(node).addClass(`pos-a add-plate num${setCardID++}`).on('contextmenu', function (ev) {
                 _creContextMenuList(ev, [node]);
                 return false;
@@ -957,7 +959,6 @@ layui.use(['element', 'layer'], function () {
                   height: parseInt(currTop2 - currTop) - 1 + 'px',
                   border: '1px solid #09f'
                 })
-                _globalRuler.setRulerPos(ev);
                 return false;
               }).on('mouseup', function () {
                 _globalRuler.delGlobalRuler();
@@ -965,10 +966,31 @@ layui.use(['element', 'layer'], function () {
                 card.find(`.num${setCardID - 1}`).css({
                   border: ''
                 })
-                $(this).off('mousemove').off('mouseup').on('mousemove', function () {
+                $(this).off('mousemove').off('mouseup').off('mouseenter').on('mousemove', function () {
+                  return false;
+                }).on('mouseenter', function () {
                   return false;
                 })
               })
+            }).on('contextmenu', function () {
+              $(this).off('mouseenter').off('mousemove').off('mousedown');
+              $(this).on('mousedown', function () {
+                return false;
+              }).on('mousemove', function () {
+                return false;
+              }).on('mouseenter', function () {
+                return false;
+              })
+              return false;
+            }).on('mouseenter', function () {
+              $(_line).remove();
+              _globalRuler.init(ev);
+              return false;
+            }).on('mousemove', function (ev){
+              _globalRuler.setRulerPos(ev);
+              return false;
+            }).on('mouseleave', function () {
+              _globalRuler.delGlobalRuler();
             })
             topMsg('请在当前版块点击并拖动选择添加元素宽高');
           },
@@ -1071,17 +1093,8 @@ layui.use(['element', 'layer'], function () {
       }).removeClass(`add-plate ${ cardBack.attr('class').match(/num\d+/) }`);
 
       cardBack.attr('class') === "" && cardBack.removeAttr('class');
-      
-      exportTemp = `
-      <div class="setHeight" style="background:url(images/${card.attr('class').split(' ')[0]}.jpg) no-repeat top center;">
-        <div class="cont">
-          ${cardBack.prop('outerHTML').replace(/&quot;/g, "'")}
-        </div>
-      </div>
-      `
 
-      $(exportsCode).addClass('exports-code layui-textarea').text(exportTemp.trim());
-
+      $(exportsCode).addClass('exports-code layui-textarea').text(cardBack.prop('outerHTML').replace(/&quot;/g, "'"));
 
       $(contmenu).append(exportsCode);
       setTimeout(function () {
