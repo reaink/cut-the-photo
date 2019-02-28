@@ -1013,7 +1013,8 @@ layui.use(['element', 'layer'], function () {
           success: function () {
             var exportsCode = $('#set-plate-div .exports-code'),
               cardBack = card.clone(true),
-              codeAll = '';
+              codeAll = '',
+              setName = cardBack.find('.card-name').text();
       
 
             cardBack.find('.add-plate').each(function (index, el) {
@@ -1026,7 +1027,7 @@ layui.use(['element', 'layer'], function () {
             })
             
               exportTemp = `
-  <div class="setHeight" style="background:url(images/${card.attr('class').split(' ')[0]}.jpg) no-repeat top center;">
+  <div class="setHeight" style="background:url(images/${setName ||card.attr('class').split(' ')[0]}.jpg) no-repeat top center;">
     <div class="cont">
       ${codeAll}    </div>
   </div>
