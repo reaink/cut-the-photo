@@ -5,7 +5,7 @@
 layui.use(['element', 'layer'], function () {
   var $ = layui.$,
     layer = layui.layer,
-    version = 'beta 1.5.4';
+    version = 'beta 1.5.5';
 
 
   var contentBox = $('.main-content'),
@@ -39,6 +39,7 @@ layui.use(['element', 'layer'], function () {
     //control
     initControlElEvent();
     initBeforeReload();
+    initLocalStroageMgr();
   }
   //控制
   function initControlElEvent() {
@@ -60,9 +61,15 @@ layui.use(['element', 'layer'], function () {
   }
   function initBeforeReload() {
     $(window).bind('beforeunload',function () {
+      setLocalStroage();
       confirm('你将会关闭该页面！')
       return ('你将会关闭页面！');
     });
+  }
+  function initLocalStroageMgr() {
+    if (isLocalStroage) {
+      getLocalStroage();
+    }
   }
   //初始内部数据
   function initInternal() {
@@ -327,6 +334,24 @@ layui.use(['element', 'layer'], function () {
     }
   }
 
+  //get
+  function getLocalStroage() {
+    var confirmLayer = layer.confirm('读取到历史修改内容，是否载入历史？',{
+      btn: ['读取', '放弃']
+    }, function () {
+      contentBox.html('');
+      contentBox.attr('style', localStorage.getItem(0));
+      for (let i = 1; i < localStorage.length; i++) {
+        contentBox.append(localStorage.getItem(i));
+      }
+      $('.line').css('transform', 'scaleY(1)');
+      $('.line-global').remove();
+      layer.close(confirmLayer);
+    }, function () {
+      layer.close(confirmLayer);
+    })
+  }
+
   //set
   function setFullScreenCenter(ev, node) {
     var clientWidth = document.documentElement.clientWidth;
@@ -360,6 +385,18 @@ layui.use(['element', 'layer'], function () {
       _creContextMenuList(ev, [exportsBox, canvas]);
       return false;
     })
+  }
+  function setLocalStroage() {
+    if (isLocalStroage() && contentBox.children()) {
+      if (localStorage.length < contentBox.children().length) {
+        localStorage.clear();
+      }
+      localStorage.setItem(0, contentBox.attr('style'));
+      for (let i = 1; i < contentBox.children().length; i++){
+        let html = $(contentBox.children()[i]).prop('outerHTML');
+        localStorage.setItem(i, html);
+      }
+    }
   }
 
   //topmsg
@@ -448,7 +485,6 @@ layui.use(['element', 'layer'], function () {
     }, 500)    
   }
   function toImage() {
-    // sortCanvas();
     var isFormatJpg = imgFormat === 'jpeg';
 
     if (isFormatJpg){
@@ -464,23 +500,6 @@ layui.use(['element', 'layer'], function () {
 
     topMsg('已转换至' + imgFormat + '格式');
   
-  }
-  function sortCanvas() {
-    var nNum, oNum, cloneNode;
-    $('#exports-box canvas').each(function (i, c) {
-      nNum = $(c).attr('class').substr($(c).attr('class').length - 1);
-      if (nNum < oNum) {
-        cloneNode = $(c).clone(true);
-        exportsBox.append(cloneNode);
-        $(c).remove();
-      }
-      console.log(nNum, oNum, nNum < oNum);
-      
-      oNum = nNum;
-    })
-    $('#exports-box canvas').each(function (i, c) {
-      console.log($(c).attr('class'));
-    })
   }
   function canvasToImage(canvas) {
     var img = __creEl('img');
@@ -559,6 +578,9 @@ layui.use(['element', 'layer'], function () {
       return true;
     }
   }
+  function isLocalStroage() {
+    return localStorage;
+  }
 
   //zoom
   function detectZoom (){
@@ -633,7 +655,7 @@ layui.use(['element', 'layer'], function () {
         return false;
       }).addClass('line line-' + idNum++);
     } else {
-      $(line).addClass('line');
+      $(line).addClass('line line-global');
     }
     return line;
   }
@@ -711,7 +733,26 @@ layui.use(['element', 'layer'], function () {
     contentBox.off('mousemove').off('click');
 
     if (isMainContent){
+      var startBtn = __creEl('button'),
+        endBtn = __creEl('button');
+    
       $(contmenu).append(`<div class="layui-field-box">设置 <small>${card.attr('class')}</small></div>`);
+      
+      $(startBtn).addClass('layui-btn layui-btn-fluid').on('click', function(ev) {
+        contMove(ev, '0');
+        addLine();
+        ContMenu.hide();
+        return false;
+      }).text('添加顶部分隔线')
+      $(endBtn).addClass('layui-btn layui-btn-fluid').on('click', function(ev) {
+        contMove(ev, parseInt(contentBox.height()));
+        addLine();
+        ContMenu.hide();
+        return false;
+      }).text('添加底部分隔线');
+      
+      $(contmenu).append(startBtn);
+      $(contmenu).append(endBtn);
     } else if (isCardMask) {
       if (card.find('.card-name').get(0)) {
         setName = card.find('.card-name').text();
