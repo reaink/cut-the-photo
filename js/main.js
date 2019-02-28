@@ -339,12 +339,40 @@ layui.use(['element', 'layer'], function () {
     var confirmLayer = layer.confirm('读取到历史修改内容，是否载入历史？',{
       btn: ['读取', '放弃']
     }, function () {
+      var timer;
       contentBox.html('');
-      contentBox.attr('style', localStorage.getItem(0));
-      for (let i = 1; i < localStorage.length; i++) {
+      contentBox.attr('style', localStorage.getItem('cont'));
+      for (let i = 0; i < localStorage.length; i++) {
         contentBox.append(localStorage.getItem(i));
       }
-      $('.line').css('transform', 'scaleY(1)');
+
+      $('.line').css('transform', 'scaleY(1)').on('mousemove', function () {
+        $(this).css('background', '#09f');
+        return false;
+      }).on('click', function () {
+        return false;
+      }).on('contextmenu', function (ev) {
+        _creContextMenuList(ev, [$(this)[0], $(this).prev()[0]]);
+        return false;
+      }).on('mouseover', function () {
+        $(this).css('transform', 'scaleY(5)');
+      }).on('mouseenter', function () {
+        clearTimeout(timer);
+      }).on('mouseleave', function () {
+        timer = setTimeout(function () {
+          $(this).css({
+            background: '#00dffc',
+            transform: 'scale(1)'
+          });
+        }, 1000);
+      })
+
+      $('.split-card').on('contextmenu', function (ev) {
+        _creContextMenuList(ev, [$(this)[0]]);
+        return false;
+      }).on('mousemove', function () {
+        return false;
+      })
       $('.line-global').remove();
       layer.close(confirmLayer);
     }, function () {
@@ -388,11 +416,9 @@ layui.use(['element', 'layer'], function () {
   }
   function setLocalStroage() {
     if (isLocalStroage() && contentBox.children()) {
-      if (localStorage.length < contentBox.children().length) {
-        localStorage.clear();
-      }
-      localStorage.setItem(0, contentBox.attr('style'));
-      for (let i = 1; i < contentBox.children().length; i++){
+      localStorage.clear();
+      localStorage.setItem('cont', contentBox.attr('style'));
+      for (let i = 0; i < contentBox.children().length; i++){
         let html = $(contentBox.children()[i]).prop('outerHTML');
         localStorage.setItem(i, html);
       }
