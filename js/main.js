@@ -44,7 +44,7 @@ layui.use(['element', 'layer'], function () {
   //控制
   function initControlElEvent() {
     initToolsBtn();
-    initStartEndBtn();
+    // initStartEndBtn();
     initExportsBtn();
     initTips();
     initsetContWidth();
@@ -62,8 +62,8 @@ layui.use(['element', 'layer'], function () {
   function initBeforeReload() {
     $(window).bind('beforeunload',function () {
       setLocalStroage();
-      confirm('你将会关闭该页面！')
-      return ('你将会关闭页面！');
+      confirm('是否关闭？');
+      return '是否关闭？'
     });
   }
   function initLocalStroageMgr() {
@@ -116,6 +116,8 @@ layui.use(['element', 'layer'], function () {
   function initToolsBtn(ev) {
     var addLineBtns = $('.top2-tools-box .addline'),
       toToolsBox2Btn = $('.top2-tools-box .to-tools-box2'),
+      toToolsBox1Btn = $('#to-tools-box'),
+      toolsBox1 = $('.tools-box1'),
       toolsBox2 = $('.tools-box2');
     
     addLineBtns.each(function (index, node) {
@@ -129,6 +131,9 @@ layui.use(['element', 'layer'], function () {
       })
     })
 
+    toToolsBox1Btn.on('click', function () {
+      $('body,html').scrollTop($(toolsBox1).offset().top);
+    })
     toToolsBox2Btn.on('click', function () {
       $('body,html').scrollTop($(toolsBox2).offset().top);
     })
@@ -276,7 +281,12 @@ layui.use(['element', 'layer'], function () {
           
           clearAll();
           setFullScreenCenter();
-          console.log('IMG width:', img.width, ', height:', img.height);
+          if (img.width && img.height) {
+            topMsg('载入成功');
+            console.log('IMG width:', img.width, ', height:', img.height);
+          } else {
+            topMsg('载入失败，建议使用Chrome浏览器');
+          }
         })
       };
 
@@ -309,12 +319,12 @@ layui.use(['element', 'layer'], function () {
       }).on('mousemove', function (){
         return false;
       }).on('click', function (){
-        $(contmenu).is(':visible') && $(contmenu).hide();
+         $(contmenu).is(':visible') &&  $(contmenu).hide();
         return false;
       }).on('mouseenter', function () {
-        $(_line).hide();
+        $(_line).is(':visible') && $(_line).hide();
       }).on('mouseleave', function () {
-        $(_line).show();
+        $(_line).is(':hidden') &&  $(_line).show();
       }).on('contextmenu', function (ev) {
         _creContextMenuList(ev, [_oDiv]);
         return false;
@@ -336,48 +346,56 @@ layui.use(['element', 'layer'], function () {
 
   //get
   function getLocalStroage() {
-    var confirmLayer = layer.confirm('读取到历史修改内容，是否载入历史？',{
-      btn: ['读取', '放弃']
-    }, function () {
-      var timer;
-      contentBox.html('');
-      contentBox.attr('style', localStorage.getItem('cont'));
-      for (let i = 0; i < localStorage.length; i++) {
-        contentBox.append(localStorage.getItem(i));
-      }
+    if (localStorage && localStorage.length > 1) {
+      var confirmLayer = layer.confirm('读取到历史修改内容，是否载入历史？',{
+        title: '历史记录',
+        btn: ['读取', '清空记录', '放弃'],
+        scrollbar: false
+      }, function () {
+        var timer;
+        contentBox.html('');
+        contentBox.attr('style', localStorage.getItem('cont'));
+        for (let i = 0; i < localStorage.length; i++) {
+          contentBox.append(localStorage.getItem(i));
+        }
 
-      $('.line').css('transform', 'scaleY(1)').on('mousemove', function () {
-        $(this).css('background', '#09f');
-        return false;
-      }).on('click', function () {
-        return false;
-      }).on('contextmenu', function (ev) {
-        _creContextMenuList(ev, [$(this)[0], $(this).prev()[0]]);
-        return false;
-      }).on('mouseover', function () {
-        $(this).css('transform', 'scaleY(5)');
-      }).on('mouseenter', function () {
-        clearTimeout(timer);
-      }).on('mouseleave', function () {
-        timer = setTimeout(function () {
-          $(this).css({
-            background: '#00dffc',
-            transform: 'scale(1)'
-          });
-        }, 1000);
-      })
+        $('.line').css('transform', 'scaleY(1)').on('mousemove', function () {
+          $(this).css('background', '#09f');
+          return false;
+        }).on('click', function () {
+          return false;
+        }).on('contextmenu', function (ev) {
+          _creContextMenuList(ev, [$(this)[0], $(this).prev()[0]]);
+          return false;
+        }).on('mouseover', function () {
+          $(this).css('transform', 'scaleY(5)');
+        }).on('mouseenter', function () {
+          clearTimeout(timer);
+        }).on('mouseleave', function () {
+          timer = setTimeout(function () {
+            $(this).css({
+              background: '#00dffc',
+              transform: 'scale(1)'
+            });
+          }, 1000);
+        })
 
-      $('.split-card').on('contextmenu', function (ev) {
-        _creContextMenuList(ev, [$(this)[0]]);
-        return false;
-      }).on('mousemove', function () {
-        return false;
+        $('.split-card').on('contextmenu', function (ev) {
+          _creContextMenuList(ev, [$(this)[0]]);
+          return false;
+        }).on('mousemove', function () {
+          return false;
+        })
+        $('.line-global').remove();
+        layer.close(confirmLayer);
+      }, function () {
+        localStorage.clear();
+        topMsg('已清空')
+        layer.close(confirmLayer);
+      }, function () {
+        layer.close(confirmLayer);
       })
-      $('.line-global').remove();
-      layer.close(confirmLayer);
-    }, function () {
-      layer.close(confirmLayer);
-    })
+    }
   }
 
   //set
@@ -774,12 +792,14 @@ layui.use(['element', 'layer'], function () {
         contMove(ev, '0');
         addLine();
         ContMenu.hide();
+        contentBox.on('mousemove', contMove);
         return false;
       }).text('添加顶部分隔线')
       $(endBtn).addClass('layui-btn layui-btn-fluid').on('click', function(ev) {
         contMove(ev, parseInt(contentBox.height()));
         addLine();
         ContMenu.hide();
+        contentBox.on('mousemove', contMove);
         return false;
       }).text('添加底部分隔线');
       
@@ -816,8 +836,14 @@ layui.use(['element', 'layer'], function () {
         setLayer = layer.open({
           btn: ['设置', '取消'],
           title: '设置当前版块',
+          scrollbar: false,
           content: `
           <div id="set-plate-div">
+            <div class="layui-btn-container">
+              <button class="layui-btn layui-btn-xs">按钮一</button> 
+              <button class="layui-btn layui-btn-xs">按钮二</button> 
+              <button class="layui-btn layui-btn-xs">按钮三</button> 
+            </div>
             <form class="layui-form card-data-form">
               <label>版块名称：</label>
               <input class="layui-input card-name" type="text" placeholder="输入版块名称">
@@ -876,6 +902,7 @@ layui.use(['element', 'layer'], function () {
         setLayer = layer.open({
           btn: ['设置', '取消'],
           title: '添加节点',
+          scrollbar: false,
           content: `
           <div id="set-plate-div">
             <form class="layui-form card-data-form">
@@ -884,7 +911,7 @@ layui.use(['element', 'layer'], function () {
               <label>元素内容：</label>
               <textarea class="layui-textarea el-cont" type="text" placeholder="输入元素内容"></textarea>
               <label>元素样式：</label>
-              <input class="layui-input el-style" type="text" placeholder="输入元素样式">
+              <textarea class="layui-textarea el-style" type="text" placeholder="输入元素样式"></textarea>
             </form>
           </div>
           `,
@@ -908,8 +935,12 @@ layui.use(['element', 'layer'], function () {
               setElName = setDiv.find('.el-name').val(),
               setElCont = setDiv.find('.el-cont').val(),
               setElStyle = setDiv.find('.el-style').val(),
-              cont;
-
+              node = __creEl(setElName),
+              cont,
+              currTop = 0,
+              currLeft = 0,
+              currTop2,
+              currLeft2;
             
             if (!card.find('.cont').get(0)) {
               cont = __creEl('div');
@@ -930,22 +961,23 @@ layui.use(['element', 'layer'], function () {
             
             // format content
             setElCont = `
-            ${setElCont.replace(/\n/g, '<br>\n').replace(/\s{2}/g, '&emsp;')}`;
-
+            ${setElCont.replace(/\n/g, '<br>\n').replace(/\s{2}/g, '&emsp;')}
+`;
             card.on('mousedown', function (ev) {
               topMsg('拖动选择添加元素宽高');
 
-              $(this).on('mouseup', function () {
-                _globalRuler.delGlobalRuler();
-                contentBox.on('mousemove', contMove);
+              $(this).off('mousemove').on('mousemove', function (ev) {
+                currTop = ev.clientY;
+                currLeft = ev.clientX;
+                currTop2 = ev.clientY - ($(cont).offset().top - $(window).scrollTop());
+                currLeft2 = ev.clientX - $(cont).offset().left;
+
                 card.find(`.num${setCardID - 1}`).css({
-                  border: ''
+                  width: parseInt(currLeft2 - currLeft) - 2 + 'px',
+                  height: parseInt(currTop2 - currTop) - 1 + 'px',
+                  border: '1px solid #09f'
                 })
-                $(this).off('mousemove').off('mouseup').off('mouseenter').on('mousemove', function () {
-                  return false;
-                }).on('mouseenter', function () {
-                  return false;
-                })
+                return false;
               })
             }).on('contextmenu', function () {
               $(this).off('mouseenter').off('mousemove').off('mousedown');
@@ -958,14 +990,13 @@ layui.use(['element', 'layer'], function () {
               })
               return false;
             }).on('mouseenter', function () {
+              topMsg('请在当前版块点击并拖动选择添加元素宽高');
+              
+              currTop = ev.clientY - ($(cont).offset().top - $(window).scrollTop());
+              currLeft = ev.clientX - $(cont).offset().left;
+
               $(_line).remove();
               !_globalRuler.getRuler('xRuler') && _globalRuler.init(ev);
-              
-              var node = __creEl(setElName),
-                currTop = ev.clientY - ($(cont).offset().top - $(window).scrollTop()),
-                currLeft = ev.clientX - $(cont).offset().left,
-                currTop2,
-                currLeft2;
               
               $(node).addClass(`pos-a add-plate num${setCardID++}`).on('contextmenu', function (ev) {
                 _creContextMenuList(ev, [node]);
@@ -974,30 +1005,37 @@ layui.use(['element', 'layer'], function () {
                 left: parseInt(currLeft) + 'px',
                 top: parseInt(currTop) + 'px',
                 opacity: .5
-              });
-
+              })
               $(this).on('mousemove', function (ev){
-                currTop2 = ev.clientY - ($(cont).offset().top - $(window).scrollTop()),
-                currLeft2 = ev.clientX - $(cont).offset().left;
+                currTop = ev.clientY - ($(cont).offset().top - $(window).scrollTop());
+                currLeft = ev.clientX - $(cont).offset().left;
 
-                card.find(`.num${setCardID - 1}`).css({
-                  width: parseInt(currLeft2 - currLeft) - 2 + 'px',
-                  height: parseInt(currTop2 - currTop) - 1 + 'px',
-                  border: '1px solid #09f'
+                $(node).css({
+                  left: parseInt(currLeft) + 'px',
+                  top: parseInt(currTop) + 'px'
                 })
+                _globalRuler.setRulerPos(ev);
                 return false;
               })
 
               $(cont).append(node);
               card.append(cont);
               return false;
-            }).on('mousemove', function (ev){
-              _globalRuler.setRulerPos(ev);
-              return false;
             }).on('mouseleave', function () {
               _globalRuler.delGlobalRuler();
+            }).on('mouseup', function () {
+              _globalRuler.delGlobalRuler();
+              contentBox.on('mousemove', contMove);
+              card.find(`.num${setCardID - 1}`).css({
+                border: ''
+              })
+              $(this).off('mousemove').off('mouseup').off('mouseenter').on('mousemove', function () {
+                return false;
+              }).on('mouseenter', function () {
+                return false;
+              })
             })
-            topMsg('请在当前版块点击并拖动选择添加元素宽高');
+            layer.close(setLayer);
           },
           btn2: function (index) {
             layer.close(setLayer);
@@ -1010,6 +1048,7 @@ layui.use(['element', 'layer'], function () {
       $(exportsCode).addClass('layui-btn layui-btn-fluid').text('输出代码').on('click', function () {
         setLayer = layer.open({
           title: '输出代码',
+          scrollbar: false,
           content: `
           <div id="set-plate-div">
             <textarea class="layui-textarea exports-code"></textarea>
@@ -1034,7 +1073,8 @@ layui.use(['element', 'layer'], function () {
               exportTemp = `
   <div class="setHeight" style="background:url(images/${setName ||card.attr('class').split(' ')[0]}.jpg) no-repeat top center;">
     <div class="cont">
-      ${codeAll}    </div>
+      ${codeAll.trim()}
+    </div>
   </div>
               `
 
@@ -1077,6 +1117,7 @@ layui.use(['element', 'layer'], function () {
         })
       })
     } else if (isCustom) {
+      $(contmenu).off('mousemove');
       var exportsCode = __creEl('textarea');
         cardBack = card.clone(true),
         removeBtn = $('<button class="layui-btn layui-btn-fluid">删除节点</button>'),

@@ -19,7 +19,7 @@
   </div>
   <div class="layui-fluid">
     <div class="layui-container">
-      <div class="layui-row tools-box">
+      <div class="layui-row tools-box tools-box1">
         <div class="layui-col-xs6">
           <label for="upload-img" class="layui-btn">
             <input type="file" id="upload-img">上传图片
@@ -39,7 +39,7 @@
         </div>
         <div class="layui-col-xs6 text-right">
           <input id="cont-width-slider" type="number" min="0" class="layui-input cont-width-val tips" data-tips="设置.cont宽度" placeholder="设置.cont宽度">
-          <button class="layui-btn tips to-tools-box2" data-tips="定位当前位置到输出工具栏">输出栏</button>
+          <button class="layui-btn tips to-tools-box2" data-tips="定位位置到输出栏">输出栏</button>
           <button class="layui-btn tips" data-tips="如需放大缩小请使用浏览器自带 Ctrl + 滚轮调整">缩放说明</button>
         </div>
       </div>
@@ -54,7 +54,7 @@
         <button id="exports-code" class="layui-btn tips" data-tips="开发中……">输出代码</button>
       </div>
       <div class="layui-col-xs6 text-right">
-        <span>输出图片格式：.<span class="img-format">jpg</span></span>
+        <button id="to-tools-box" class="layui-btn" data-tips="定位到顶部控制栏">控制栏</button>
         <div class="layui-btn-group set-img-format-box">
           <button class="layui-btn tips" data-tips="转换Canvas至jpg图片" format="jpg">jpg</button>
           <button class="layui-btn tips" data-tips="转换Canvas至png图片" format="png">png</button>
