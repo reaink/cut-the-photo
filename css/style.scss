@@ -51,7 +51,6 @@
   float: right;
 }
 
-
 .tools-box {
   margin: 10px 0;
   box-shadow: 0 2px 5px rgba(0,0,0,.2);
@@ -81,9 +80,9 @@
       float: left;
       padding: 5px;
       font-size: 14px;
-      color: #fff;
+      color: #888;
       &:hover {
-        background: #333;
+        background: rgba(0,0,0,.2);
       }
     }
     .add-plate {
@@ -135,5 +134,28 @@ h3 {
     display: inline-block;
     width: 90px;
     padding-bottom: 2px;
+  }
+}
+
+#set-plate-div {
+  .layui-form {
+    .form-input-box {
+      position: relative;
+      .layui-icon {
+        position: absolute;
+        top: 8px;
+        right: 5px;
+        opacity: .3;
+        transition: all .3s;
+        &:hover {
+          opacity: 1;
+          transition: all .3s;
+          cursor: pointer;
+        }
+        &:active {
+          color: #666;
+        }
+      }
+    }
   }
 }

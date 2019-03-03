@@ -5,7 +5,7 @@
 layui.use(['element', 'layer'], function () {
   var $ = layui.$,
     layer = layui.layer,
-    version = 'beta 1.5.6';
+    version = 'beta 1.5.8';
 
   var contentBox = $('.main-content'),
     exportsBox = $('#exports-box'),
@@ -14,7 +14,7 @@ layui.use(['element', 'layer'], function () {
     _globalRuler = {},
     _canvas,
     ContMenu,//控制
-    contmenu = __creEl('div'),//全局元素
+    contmenu = __creEl('div'),//全局右键菜单元素
     _oldLines = [],
     idNum = 1,
     cardNum = 1,
@@ -181,12 +181,12 @@ layui.use(['element', 'layer'], function () {
         success: function () {
           var resultCodes = '',
             cards = contentBox.find('.split-card'),
-            cardBack,
-            codeAll = '';
+            cardBack;
           
           cards.each(function (index, card) {
             cardBack = $(card).clone(true),
             setName = cardBack.find('.card-name').text();
+            var codeAll = '';
 
             cardBack.find('.add-plate').each(function (index, el) {
               $(el).css({
@@ -198,7 +198,7 @@ layui.use(['element', 'layer'], function () {
             })
             
               exportTemp = `
-  <div class="setHeight" style="background:url(images/${setName ||$(card).attr('class').split(' ')[5]}.jpg) no-repeat top center;">
+  <div class="setHeight" style="background:url(images/${setName ||$(card).attr('class').split(' ')[4]}.jpg) no-repeat top center;">
     <div class="cont">
       ${codeAll.trim()}
     </div>
@@ -373,7 +373,11 @@ layui.use(['element', 'layer'], function () {
         setCardEvent($('.split-card'));
         setAddElEvent($('.split-card .add-plate'));
 
-        $('.line-global').remove();
+        $('.line-global,.global-ruler-x,.global-ruler-y').remove();
+
+        idNum = localStorage.getItem('idNum');
+        cardNum = localStorage.getItem('cardNum');
+        setCardID = localStorage.getItem('setCardID');
         layer.close(confirmLayer);
       }, function () {
         localStorage.clear();
@@ -423,6 +427,9 @@ layui.use(['element', 'layer'], function () {
     if (isLocalStroage() && contentBox.children()) {
       localStorage.clear();
       localStorage.setItem('cont', contentBox.attr('style'));
+      localStorage.setItem('idNum', idNum);
+      localStorage.setItem('cardNum', cardNum);
+      localStorage.setItem('setCardID', setCardID);
       for (let i = 0; i < contentBox.children().length; i++){
         let html = $(contentBox.children()[i]).prop('outerHTML');
         localStorage.setItem(i, html);
@@ -887,7 +894,12 @@ layui.use(['element', 'layer'], function () {
             <div class="layui-btn-container"></div>
             <form class="layui-form card-data-form">
               <label>版块名称：</label>
-              <input class="layui-input card-name" type="text" placeholder="输入版块名称">
+              <div class="layui-form-item">
+                <div class="form-input-box">
+                  <input class="layui-input card-name" type="text" placeholder="输入版块名称">
+                  <i class="layui-icon layui-icon-close"></i>
+                </div>
+              </div>
               <span class="badge-box"></span>
             </form>
           </div>
@@ -906,7 +918,7 @@ layui.use(['element', 'layer'], function () {
             for (let name of IdCreateShortcutNames) {
               tmpBtn = $(`<button class="layui-btn layui-btn-xs">${name}</button>`);
               tmpBtn.on('click', function () {
-                here.isInputName(name);
+                $('#set-plate-div .card-name').val('').val($('#set-plate-div .card-name').val()+name).focus();
                 backHistory['cardName'] = $(cont).find('.card-name').text();
               });
               $('#set-plate-div .layui-btn-container').append(tmpBtn)
@@ -919,6 +931,10 @@ layui.use(['element', 'layer'], function () {
               } else if (ev.keyCode === 13 && !$('#set-plate-div .card-name').val()) {
                 here.notInputName();
               }
+            })
+
+            $('#set-plate-div .layui-icon-close').on('click', function () {
+              $('#set-plate-div .card-name').val('');
             })
 
             ContMenu.hide();
