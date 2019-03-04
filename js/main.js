@@ -58,9 +58,24 @@ layui.use(['element', 'layer'], function () {
     $('#clear-exports').on('click', clearExports)
   }
   function initBeforeReload() {
+    $(document).on('keydown', function (ev) {
+      ev = ev || event;
+      if (ev.keyCode === 116) {
+        layer.confirm('是否要刷新页面？<br/>注意：若图片过大，将不会保存在记录中', {
+          btn: ['刷新', '取消']
+        }, function () {
+          setLocalStroage();
+          setTimeout(function () {
+            window.location.reload();
+          }, 200);
+        })
+
+        return false;
+      }
+    })
     $(window).bind('beforeunload',function () {
       setLocalStroage();
-      confirm('是否关闭？');
+      confirm('是否关闭');
       return '是否关闭？'
     });
   }
@@ -426,13 +441,13 @@ layui.use(['element', 'layer'], function () {
   function setLocalStroage() {
     if (isLocalStroage() && contentBox.children()) {
       localStorage.clear();
-      localStorage.setItem('cont', contentBox.attr('style'));
+      contentBox.attr('style').length < 2097152 && localStorage.setItem('cont', contentBox.attr('style'));
       localStorage.setItem('idNum', idNum);
       localStorage.setItem('cardNum', cardNum);
       localStorage.setItem('setCardID', setCardID);
       for (let i = 0; i < contentBox.children().length; i++){
         let html = $(contentBox.children()[i]).prop('outerHTML');
-        localStorage.setItem(i, html);
+        contentBox.attr('style').length < 2097152 && localStorage.setItem(i, html);
       }
     }
   }
