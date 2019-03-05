@@ -22,7 +22,7 @@ layui.use(['element', 'layer'], function () {
     imgFormat = 'jpeg',
     setCardID = 0,
     backHistory = {},
-    IdCreateShortcutNames = ['top', 'xx', 'brand', 'pro', 'join', 'news', 'newpro', 'contact'] //;
+    IdCreateShortcutNames = ['top', 'nav', 'xx1', 'company', 'brand', 'pro', 'join', 'video', 'news', 'newpro', 'contact'] //;
 
   //初始化元素
   function initElement() {
@@ -66,6 +66,7 @@ layui.use(['element', 'layer'], function () {
         }, function () {
           setLocalStroage();
           setTimeout(function () {
+            $(window).unbind('beforeunload');
             window.location.reload();
           }, 200);
         })
@@ -188,6 +189,7 @@ layui.use(['element', 'layer'], function () {
       layer.open({
         title: '输出代码',
         scrollbar: false,
+        area: '450px',
         content: `
         <div id="set-plate-div">
           <textarea class="layui-textarea exports-code"></textarea>
@@ -315,7 +317,7 @@ layui.use(['element', 'layer'], function () {
             'box-shadow': '0 0 5px #999'
           })
           
-          clearAll();
+          setContEl('clear');
           setFullScreenCenter();
           if (img.width && img.height) {
             topMsg('载入成功');
@@ -415,7 +417,7 @@ layui.use(['element', 'layer'], function () {
       exportsBox.css('margin-left', -left + 'px');
     }
   }
-  function setOther(method) {
+  function setContEl(method) {
     method = method || 'remove';
 
     if (method === 'remove') {
@@ -424,6 +426,8 @@ layui.use(['element', 'layer'], function () {
       contentBox.find('.line,.card-name').hide();
     } else if (method === 'show') {
       contentBox.find('.line,.card-name').show();
+    } else if (method === 'clear') {
+      contentBox.find('.line,.card-mask').remove();
     }
 
   }
@@ -520,7 +524,7 @@ layui.use(['element', 'layer'], function () {
     var clearLayer = layer.confirm('确认清除所有已添加元素？', {
       btn: ['确认', '取消']
     }, function () {
-      setOther('remove');
+      setContEl('remove');
       _globalRuler.remove();
       contentBox.find('.mask').remove();
       contentBox.find('.card-remove-btn').remove();
@@ -537,7 +541,7 @@ layui.use(['element', 'layer'], function () {
 
     clearExports();
     var loading = layer.load(1, {shade: 0.5});
-    setOther('hide');
+    setContEl('hide');
     setExportBoxWidth();
     setFullScreenCenter(1, exportsBox);
     contentBox.find('.add-plate').hide();
@@ -583,7 +587,7 @@ layui.use(['element', 'layer'], function () {
           if (i === splitCards.length) {
             layer.close(loading);
             topMsg('输出完成');
-            setOther('show');
+            setContEl('show');
             contentBox.find('.add-plate').show();
             setExportsCanvasContextMenu();
             _creContextMenuList(1, [exportsBox, exportsBox.find('canvas')]);
@@ -623,7 +627,7 @@ layui.use(['element', 'layer'], function () {
     return img;
   }
   function downImage() {
-    setOther('hide');
+    setContEl('hide');
     if (isHaveCanvas() === 'notCanvas')return;
 
     var exportImgs = $('#exports-box img'),
@@ -637,7 +641,7 @@ layui.use(['element', 'layer'], function () {
         topMsg(`下载第${i}张，共${exportImgs.length}张`);
         i++;
       } else {
-        setOther('show');
+        setContEl('show');
         topMsg(`下载共${exportImgs.length}张`, 3000);
         clearInterval(timer);
       }
@@ -690,6 +694,9 @@ layui.use(['element', 'layer'], function () {
   }
   function isLocalStroage() {
     return localStorage;
+  }
+  function isDelMask() {
+    return backHistory['card'];
   }
 
   //zoom
@@ -835,7 +842,7 @@ layui.use(['element', 'layer'], function () {
       setLayer;
     
     $(contmenu).html('');
-    contentBox.off('mousemove').off('click');
+    contentBox.off('click');
 
     if (isMainContent){
       var startBtn = __creEl('button'),
@@ -858,6 +865,7 @@ layui.use(['element', 'layer'], function () {
         contentBox.on('mousemove', contMove);
         return false;
       }).text('添加底部分隔线');
+
       $(recoveryCardBtn).addClass('layui-btn layui-btn-fluid').on('click', function (ev) {
         var backCard = backHistory['card'];
 
@@ -865,12 +873,14 @@ layui.use(['element', 'layer'], function () {
         setAddElEvent(backCard.find('.add-plate'));
 
         contentBox.append(backCard);
+        backHistory['card'] = '';
+
         ContMenu.hide();
         contentBox.on('mousemove', contMove);
         return false;
       }).text('恢复删除版块');
       
-      $(contmenu).append(recoveryCardBtn);
+      isDelMask() && $(contmenu).append(recoveryCardBtn);
       $(contmenu).append(startBtn);
       $(contmenu).append(endBtn);
     } else if (isCardMask) {
@@ -903,6 +913,7 @@ layui.use(['element', 'layer'], function () {
         setLayer = layer.open({
           btn: ['设置', '清除', '取消'],
           title: '设置当前版块',
+          area: '312px',
           scrollbar: false,
           content: `
           <div id="set-plate-div">
@@ -949,7 +960,7 @@ layui.use(['element', 'layer'], function () {
             })
 
             $('#set-plate-div .layui-icon-close').on('click', function () {
-              $('#set-plate-div .card-name').val('');
+              $('#set-plate-div .card-name').val('').focus();
             })
 
             ContMenu.hide();
