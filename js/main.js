@@ -22,7 +22,7 @@ layui.use(['element', 'layer'], function () {
     imgFormat = 'jpeg',
     setCardID = 0,
     backHistory = {},
-    IdCreateShortcutNames = ['top', 'nav', 'xx1', 'company', 'brand', 'pro', 'join', 'video', 'news', 'newpro', 'contact'] //;
+    shortcutCreateNames = ['top', 'nav', 'xx1', 'company', 'brand', 'pro', 'join', 'video', 'show', 'news', 'newpro', 'contact'] //;
 
   //初始化元素
   function initElement() {
@@ -937,14 +937,18 @@ layui.use(['element', 'layer'], function () {
               return false;
             })
 
-            //如果有历史cardName则填入
-            backHistory['cardName'] && 
-            $('#set-plate-div .card-name').val(backHistory['cardName']);
+            //如果有历史cardName则填入，如果有数字，则自增
+            if (backHistory['cardName']) {
+              if (backHistory['cardName'].match(/\d+/)) {
+                backHistory['cardName'] = backHistory['cardName'].replace(/\d+/, ~~backHistory['cardName'].match(/\d+/)[0]+1);
+              }
+              $('#set-plate-div .card-name').val(backHistory['cardName']);
+            }
 
-            for (let name of IdCreateShortcutNames) {
-              tmpBtn = $(`<button class="layui-btn layui-btn-xs">${name}</button>`);
+            for (let index in shortcutCreateNames) {
+              tmpBtn = $(`<button class="layui-btn layui-btn-xs">${shortcutCreateNames[index]}</button>`);
               tmpBtn.on('click', function () {
-                $('#set-plate-div .card-name').val('').val($('#set-plate-div .card-name').val()+name).focus();
+                $('#set-plate-div .card-name').val('').val($('#set-plate-div .card-name').val()+shortcutCreateNames[index]).focus();
                 backHistory['cardName'] = $(cont).find('.card-name').text();
               });
               $('#set-plate-div .layui-btn-container').append(tmpBtn)
