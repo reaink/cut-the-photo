@@ -1098,7 +1098,7 @@ layui.use(['element', 'layer'], function () {
                   border: '1px solid #09f',
                   opacity: ''
                 })
-                if (parseInt(currLeft2 - currLeft) >= 0) {
+                if (parseInt(currLeft2 - currLeft) <= 0) {
                   card.find(`.num${setCardID - 1}`).css({
                     width: '',
                     height: '',
