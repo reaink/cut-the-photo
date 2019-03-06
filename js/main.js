@@ -776,6 +776,7 @@ layui.use(['element', 'layer'], function () {
         left: 0,
         top: ev.clientY - 2 + 'px',
         backgroundColor: rulerColor,
+        cursor: 'none',
         zIndex: 99999
       }).addClass('global-ruler-x').on('mouseover', function (ev) {
         here.setRulerPos(ev);
@@ -790,6 +791,7 @@ layui.use(['element', 'layer'], function () {
         top: 0,
         left: ev.clientX - 2 + 'px',
         backgroundColor: rulerColor,
+        cursor: 'none',
         zIndex: 99999
       }).addClass('global-ruler-y').on('mouseover', function (ev) {
         here.setRulerPos(ev);
@@ -1080,6 +1082,9 @@ layui.use(['element', 'layer'], function () {
             card.on('mousedown', function (ev) {
               topMsg('拖动以设置元素宽高');
 
+              card.find(`.num${setCardID - 1}`).css('opacity','');
+              
+
               currTop = ev.clientY - ($(cont).offset().top - $(window).scrollTop());
               currLeft = ev.clientX - $(cont).offset().left;
               
@@ -1088,11 +1093,17 @@ layui.use(['element', 'layer'], function () {
                 currLeft2 = ev.clientX - $(cont).offset().left;
                 
                 card.find(`.num${setCardID - 1}`).css({
-                  width: parseInt(currLeft2 - currLeft) - 2 + 'px',
-                  height: parseInt(currTop2 - currTop) - 1 + 'px',
+                  width: parseInt(currLeft2 - currLeft) -3 + 'px',
+                  height: parseInt(currTop2 - currTop) - 2 + 'px',
                   border: '1px solid #09f',
                   opacity: ''
                 })
+                if (parseInt(currLeft2 - currLeft) >= 0) {
+                  card.find(`.num${setCardID - 1}`).css({
+                    width: '',
+                    height: '',
+                  });
+                }
 
                 _globalRuler.setRulerPos(ev);
                 return false;
@@ -1109,6 +1120,7 @@ layui.use(['element', 'layer'], function () {
               return false;
             }).on('mouseenter', function (ev) {
               $(_line).remove();
+              $(cont).css('cursor', 'none');
               
               if (!_globalRuler.isAdd()) {
                 topMsg('请在当前版块点击并拖动选择添加元素宽高');
@@ -1150,6 +1162,8 @@ layui.use(['element', 'layer'], function () {
               
               $(_line).show();
               contentBox.on('mousemove', contMove);
+              
+              $(cont).css('cursor', 'auto');
               card.find(`.num${setCardID - 1}`).css({
                 border: ''
               })
