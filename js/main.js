@@ -213,7 +213,8 @@ layui.use(['element', 'layer'], function () {
 
               codeAll += $(el).prop('outerHTML').replace(/&quot;/g, "'") + '\n';
             })
-            
+
+            if (codeAll) {
               exportTemp = `
   <div class="setHeight" style="background:url(images/${setName ||$(card).attr('class').split(' ')[4]}.jpg) no-repeat top center;">
     <div class="cont">
@@ -221,6 +222,12 @@ layui.use(['element', 'layer'], function () {
     </div>
   </div>
               `;
+            } else {
+              exportTemp = `
+  <div class="setHeight" style="background:url(images/${setName ||$(card).attr('class').split(' ')[4]}.jpg) no-repeat top center;"></div>
+              `;
+            }
+            
 
             resultCodes += '\n' + exportTemp.trim();
           })
@@ -983,6 +990,12 @@ layui.use(['element', 'layer'], function () {
             } else {
               $(cont).find('.card-name').text(name || $('#set-plate-div .card-name').val());
             }
+            
+            $(cont).css({
+              width: contWidth,
+              height: '100%'
+            });
+            
             backHistory['cardName'] = $(cont).find('.card-name').text();
             layer.close(setLayer);
           },
