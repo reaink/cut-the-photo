@@ -626,7 +626,7 @@ layui.use(['element', 'layer'], function () {
     var img = __creEl('img');
     var setClass = $(canvas).attr('class').split(' ')[1] ? $(canvas).attr('class').split(' ')[1] : $(canvas).attr('class').split(' ')[0];
 
-    $(img).attr('src', canvas.toDataURL("image/" + imgFormat))
+    $(img).attr('src', canvas.toDataURL("image/" + imgFormat, 1))
     .addClass(setClass).addClass(imgFormat).css({
       width: $(canvas).css('width'),
       height: $(canvas).css('height')
