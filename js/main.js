@@ -328,6 +328,8 @@ layui.use(['element', 'layer'], function () {
           setFullScreenCenter();
           if (img.width && img.height) {
             topMsg('载入成功');
+            idNum = 1;
+            cardNum = 1;
             console.log('IMG width:', img.width, ', height:', img.height);
           } else {
             topMsg('载入失败，建议使用Chrome浏览器');
@@ -533,6 +535,8 @@ layui.use(['element', 'layer'], function () {
     }, function () {
       setContEl('remove');
       _globalRuler.remove();
+      idNum = 1;
+      cardNum = 1;
       contentBox.find('.mask').remove();
       contentBox.find('.card-remove-btn').remove();
       layer.close(clearLayer);
