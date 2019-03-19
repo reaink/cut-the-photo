@@ -5,7 +5,7 @@
 layui.use(['element', 'layer'], function () {
   var $ = layui.$,
     layer = layui.layer,
-    version = 'beta 1.5.9';
+    version = 'beta 1.6.0';
 
   var contentBox = $('.main-content'),
     exportsBox = $('#exports-box'),
@@ -189,10 +189,10 @@ layui.use(['element', 'layer'], function () {
       layer.open({
         title: '输出代码',
         scrollbar: false,
-        area: '450px',
+        area: ['650px', '500px'],
         content: `
         <div id="set-plate-div">
-          <textarea class="layui-textarea exports-code"></textarea>
+          <textarea class="layui-textarea exports-code" style="height: 100%"></textarea>
         </div>
         `,
         success: function () {
@@ -201,10 +201,13 @@ layui.use(['element', 'layer'], function () {
             cardBack;
           
           cards.each(function (index, card) {
-            cardBack = $(card).clone(true),
-            setName = cardBack.find('.card-name').text();
-            var codeAll = '';
+            cardBack = $(card).clone(true);
 
+            var codeAll = '',
+              setName = cardBack.find('.card-name').text(),
+              idName = $(card).attr('class').split(' ')[4],
+              nameHasNum = /\d/.test(setName);
+            
             cardBack.find('.add-plate').each(function (index, el) {
               $(el).css({
                 border: ''
@@ -214,21 +217,16 @@ layui.use(['element', 'layer'], function () {
               codeAll += $(el).prop('outerHTML').replace(/&quot;/g, "'") + '\n';
             })
 
-            if (codeAll) {
-              exportTemp = `
-  <div class="setHeight" style="background:url(images/${setName ||$(card).attr('class').split(' ')[4]}.jpg) no-repeat top center;">
+            exportTemp = `
+  <div${(setName && !nameHasNum) ? ` id="${setName || idName}"` : ''} class="setHeight" style="background:url(images/${setName || idName}.jpg) no-repeat top center; height: ${$(card).height() + 'px'}">${
+    codeAll && `
     <div class="cont">
       ${codeAll.trim()}
     </div>
-  </div>
-              `;
-            } else {
-              exportTemp = `
-  <div class="setHeight" style="background:url(images/${setName ||$(card).attr('class').split(' ')[4]}.jpg) no-repeat top center;"></div>
-              `;
-            }
+`
+}</div>
+            `;
             
-
             resultCodes += '\n' + exportTemp.trim();
           })
           
@@ -1086,6 +1084,7 @@ layui.use(['element', 'layer'], function () {
             card.on('mousedown', function (ev) {
               topMsg('拖动以设置元素宽高');
 
+              $('body').addClass('no-select');
               card.find(`.num${setCardID - 1}`).css('opacity','');
               
 
@@ -1164,6 +1163,7 @@ layui.use(['element', 'layer'], function () {
             }).on('mouseup', function () {
               _globalRuler.hide();
               
+              $('body').removeClass('no-select');
               $(_line).show();
               contentBox.on('mousemove', contMove);
               
@@ -1191,9 +1191,10 @@ layui.use(['element', 'layer'], function () {
         setLayer = layer.open({
           title: '输出代码',
           scrollbar: false,
+          area: ['650px', '500px'],
           content: `
           <div id="set-plate-div">
-            <textarea class="layui-textarea exports-code"></textarea>
+            <textarea class="layui-textarea exports-code" style="height: 100%"></textarea>
           </div>
           `,
           success: function () {
@@ -1213,11 +1214,12 @@ layui.use(['element', 'layer'], function () {
             })
             
               exportTemp = `
-  <div class="setHeight" style="background:url(images/${setName ||card.attr('class').split(' ')[5]}.jpg) no-repeat top center;">
-    <div class="cont">
+  <div class="setHeight" style="background:url(images/${setName || card.attr('class').split(' ')[4]}.jpg) no-repeat top center; height: ${ card.height() + 'px'}">${
+    codeAll && `<div class="cont">
       ${codeAll.trim()}
     </div>
-  </div>
+`
+}</div>
               `
 
             exportsCode.text(exportTemp.trim());
@@ -1280,7 +1282,7 @@ layui.use(['element', 'layer'], function () {
 
       cardBack.attr('class') === "" && cardBack.removeAttr('class');
 
-      $(exportsCode).addClass('exports-code layui-textarea').text(cardBack.prop('outerHTML').replace(/&quot;/g, "'"));
+      $(exportsCode).css('height', '180px').addClass('exports-code layui-textarea').text(cardBack.prop('outerHTML').replace(/&quot;/g, "'"));
 
       $(contmenu).append(exportsCode);
       setTimeout(function () {
